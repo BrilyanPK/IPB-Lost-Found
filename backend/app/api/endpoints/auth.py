@@ -8,16 +8,29 @@ from app.core.security import create_access_token
 
 router = APIRouter()
 
+from app.models import LogAktivitas
+from fastapi import Request
+
 @router.post("/login", response_model=Token)
 def login_access_token(
-    session: SessionDep, form_data: OAuth2PasswordRequestForm = Depends()
+    request: Request,
+    session: SessionDep, 
+    form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
-    """
-    OAuth2 compatible token login, get an access token for future requests
-    """
     user = UserService.authenticate(
         db=session, email=form_data.username, password=form_data.password
     )
+    
+    # Record Log
+    log = LogAktivitas(
+        user_id=user.id if user else None,
+        aksi="LOGIN",
+        ip_address=request.client.host,
+        status="SUCCESS" if user else "FAILED"
+    )
+    session.add(log)
+    session.commit()
+
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     
@@ -28,11 +41,8 @@ def login_access_token(
 
 @router.post("/register", response_model=User)
 def register_user(
-    *, session: SessionDep, user_in: UserCreate
+    *, request: Request, session: SessionDep, user_in: UserCreate
 ) -> Any:
-    """
-    Register a new user.
-    """
     user = UserService.get_user_by_email(db=session, email=user_in.email)
     if user:
         raise HTTPException(
@@ -40,6 +50,17 @@ def register_user(
             detail="The user with this username already exists in the system.",
         )
     user = UserService.create_user(db=session, user_in=user_in)
+    
+    # Record Log
+    log = LogAktivitas(
+        user_id=user.id,
+        aksi="REGISTER",
+        ip_address=request.client.host,
+        status="SUCCESS"
+    )
+    session.add(log)
+    session.commit()
+    
     return user
 
 @router.post("/test-token", response_model=User)

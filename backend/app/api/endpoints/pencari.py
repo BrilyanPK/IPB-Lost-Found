@@ -37,10 +37,34 @@ def daftar_laporan_kehilangan(
     if kategori:
         query = query.filter(Laporan.kategori == kategori)
         
-    laporan = query.offset(skip).limit(limit).all()
+    laporan = query.order_by(Laporan.waktu_pelaporan.desc()).offset(skip).limit(limit).all()
+    return laporan
+
+@router.get("/laporan/{laporan_id}", response_model=LaporanSchema)
+def baca_laporan_detail(
+    laporan_id: str,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    laporan = session.query(Laporan).filter(Laporan.id == laporan_id).first()
+    if not laporan:
+        raise HTTPException(status_code=404, detail="Laporan not found")
+    return laporan
+
+@router.delete("/laporan/{laporan_id}", response_model=LaporanSchema)
+def batalkan_laporan(
+    laporan_id: str,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    laporan = session.query(Laporan).filter(Laporan.id == laporan_id, Laporan.user_id == current_user.id).first()
+    if not laporan:
+        raise HTTPException(status_code=404, detail="Laporan not found or not owned by user")
+    session.delete(laporan)
+    session.commit()
     return laporan
 
 @router.get("/laporanku", response_model=List[LaporanSchema])
 def daftar_laporanku(session: SessionDep, current_user: CurrentUser) -> Any:
-    laporan = session.query(Laporan).filter(Laporan.user_id == current_user.id).all()
+    laporan = session.query(Laporan).filter(Laporan.user_id == current_user.id).order_by(Laporan.waktu_pelaporan.desc()).all()
     return laporan

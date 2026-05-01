@@ -43,3 +43,21 @@ def read_logs(session: SessionDep, current_user: CurrentUser, skip: int = 0, lim
     check_admin(current_user)
     logs = session.query(LogAktivitas).order_by(LogAktivitas.waktu.desc()).offset(skip).limit(limit).all()
     return logs
+
+@router.get("/dashboard-keamanan", response_model=dict)
+def get_security_stats(session: SessionDep, current_user: CurrentUser) -> Any:
+    check_admin(current_user)
+    
+    total_login_success = session.query(LogAktivitas).filter(LogAktivitas.aksi == "LOGIN", LogAktivitas.status == "SUCCESS").count()
+    total_login_failed = session.query(LogAktivitas).filter(LogAktivitas.aksi == "LOGIN", LogAktivitas.status == "FAILED").count()
+    total_logout = session.query(LogAktivitas).filter(LogAktivitas.aksi == "LOGOUT").count()
+    
+    # Data sederhana untuk grafik (login per hari) - ini bisa dikembangkan lebih lanjut
+    # Untuk sekarang kita kembalikan statistik dasar dulu
+    
+    return {
+        "total_login_success": total_login_success,
+        "total_login_failed": total_login_failed,
+        "total_logout": total_logout,
+        "total_registrasi": session.query(LogAktivitas).filter(LogAktivitas.aksi == "REGISTER").count()
+    }

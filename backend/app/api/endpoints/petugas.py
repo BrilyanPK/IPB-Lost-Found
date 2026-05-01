@@ -15,12 +15,29 @@ def check_petugas_or_admin(current_user: User):
 @router.get("/dashboard", response_model=dict)
 def get_dashboard_stats(session: SessionDep, current_user: CurrentUser) -> Any:
     check_petugas_or_admin(current_user)
-    laporan_penemuan = session.query(Laporan).filter(Laporan.jenis == JenisLaporanEnum.PENEMUAN).count()
+    total_inventory = session.query(Laporan).filter(Laporan.jenis == JenisLaporanEnum.PENEMUAN).count()
     laporan_baru = session.query(Laporan).filter(Laporan.status == StatusLaporanEnum.DIBUAT).count()
+    
+    # Aktivitas terbaru (5 laporan penemuan terbaru)
+    aktivitas_terbaru = session.query(Laporan).order_by(Laporan.waktu_pelaporan.desc()).limit(5).all()
+    
     return {
-        "total_laporan_penemuan": laporan_penemuan,
-        "laporan_baru_hari_ini": laporan_baru
+        "total_barang_inventory": total_inventory,
+        "laporan_baru_hari_ini": laporan_baru,
+        "aktivitas_terbaru": aktivitas_terbaru
     }
+
+@router.get("/laporan/{laporan_id}", response_model=LaporanSchema)
+def baca_laporan_detail(
+    laporan_id: str,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    check_petugas_or_admin(current_user)
+    laporan = session.query(Laporan).filter(Laporan.id == laporan_id).first()
+    if not laporan:
+        raise HTTPException(status_code=404, detail="Laporan not found")
+    return laporan
 
 @router.post("/temuan", response_model=LaporanSchema)
 def input_temuan(session: SessionDep, current_user: CurrentUser, laporan_in: LaporanCreate) -> Any:
