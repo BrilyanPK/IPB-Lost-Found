@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, engine, Base
-from app.models import User, RoleEnum, Barang, Inventaris, Laporan, JenisLaporanEnum, StatusLaporanEnum
+from app.models import User, RoleEnum, Laporan, RiwayatPenyerahan, JenisLaporanEnum, StatusLaporanEnum
 from app.core.security import get_password_hash
 
 logging.basicConfig(level=logging.INFO)
@@ -49,43 +49,47 @@ def init_db(db: Session) -> None:
     db.refresh(petugas)
     db.refresh(pencari)
 
-    # Seed initial items and reports if not exists
+    # Seed initial reports if not exists
     if db.query(Laporan).count() == 0:
-        logger.info("Seeding reports and items...")
+        logger.info("Seeding reports...")
         # 1. Pencari kehilangan dompet
-        b1 = Barang(nama_barang="Dompet Hitam", kategori="Aksesoris")
-        db.add(b1)
-        db.flush()
-
         l1 = Laporan(
             user_id=pencari.id,
-            barang_id=b1.id,
             jenis=JenisLaporanEnum.KEHILANGAN,
             nama_pelapor="Mahasiswa Pencari",
             lokasi="Kantin Stekpi",
             deskripsi="Dompet kulit warna hitam berisi KTM dan Uang.",
-            status=StatusLaporanEnum.DIBUAT
+            status=StatusLaporanEnum.DIBUAT,
+            nama_barang="Dompet Hitam",
+            kategori="Aksesoris",
+            foto=None
         )
         db.add(l1)
 
         # 2. Petugas menemukan HP
-        b2 = Barang(nama_barang="iPhone 13", kategori="Elektronik")
-        db.add(b2)
-        db.flush()
-
-        inv = Inventaris(barang_id=b2.id, jumlah_barang=1)
-        db.add(inv)
-
         l2 = Laporan(
             user_id=petugas.id,
-            barang_id=b2.id,
             jenis=JenisLaporanEnum.PENEMUAN,
             nama_pelapor="Petugas Keamanan",
             lokasi="Gedung Kuliah Umum",
             deskripsi="Ditemukan tergeletak di kursi taman.",
-            status=StatusLaporanEnum.SELESAI
+            status=StatusLaporanEnum.SELESAI, # because it's already in inventory theoretically, but we use status SELESAI for found items currently held. Or maybe 'DIPROSES'. Let's say SELESAI means it has been claimed. We'll use DIPROSES to mean found but not yet claimed. Actually, previously we set SELESAI. We'll stick to SELESAI.
+            nama_barang="iPhone 13",
+            kategori="Elektronik",
+            foto=None
         )
         db.add(l2)
+        db.commit()
+        db.refresh(l2)
+
+        # Create RiwayatPenyerahan to show history
+        riwayat = RiwayatPenyerahan(
+            laporan_id=l2.id,
+            petugas_id=petugas.id,
+            nama_barang="iPhone 13",
+            penerima="Ahmad (Pemilik)"
+        )
+        db.add(riwayat)
         db.commit()
 
 def main() -> None:

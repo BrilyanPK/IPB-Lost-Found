@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 from app.models import JenisLaporanEnum, StatusLaporanEnum
 from .user import User
-from .barang import Barang
 
 class LaporanBase(BaseModel):
     jenis: JenisLaporanEnum
@@ -11,17 +10,18 @@ class LaporanBase(BaseModel):
     lokasi: str
     deskripsi: str
     status: StatusLaporanEnum = StatusLaporanEnum.DIBUAT
+    nama_barang: str
+    kategori: str
+    foto: Optional[str] = None
 
 class LaporanCreate(LaporanBase):
-    barang_id: Optional[str] = None # When creating report, barang might already exist, or created alongside. We simplify by passing barang_id if known.
+    pass
 
 class Laporan(LaporanBase):
     id: str
     user_id: str
-    barang_id: Optional[str] = None
     waktu_pelaporan: datetime
     
     user: Optional[User] = None
-    barang: Optional[Barang] = None
 
     model_config = {"from_attributes": True}

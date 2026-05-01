@@ -31,25 +31,13 @@ class User(Base):
     # Relationships
     laporan = relationship("Laporan", back_populates="user")
     log_aktivitas = relationship("LogAktivitas", back_populates="user")
-
-class Barang(Base):
-    __tablename__ = "barang"
-
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    nama_barang = Column(String, index=True)
-    kategori = Column(String)
-    foto = Column(String, nullable=True) # URL to photo
-
-    # Relationships
-    laporan = relationship("Laporan", back_populates="barang")
-    inventaris = relationship("Inventaris", back_populates="barang", uselist=False)
+    riwayat_diserahkan = relationship("RiwayatPenyerahan", back_populates="petugas")
 
 class Laporan(Base):
     __tablename__ = "laporan"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id"))
-    barang_id = Column(String(36), ForeignKey("barang.id"))
     
     jenis = Column(Enum(JenisLaporanEnum))
     nama_pelapor = Column(String)
@@ -57,20 +45,30 @@ class Laporan(Base):
     lokasi = Column(String)
     deskripsi = Column(Text)
     status = Column(Enum(StatusLaporanEnum), default=StatusLaporanEnum.DIBUAT)
+    
+    # Atribut Barang
+    nama_barang = Column(String, index=True)
+    kategori = Column(String)
+    foto = Column(String, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="laporan")
-    barang = relationship("Barang", back_populates="laporan")
+    riwayat = relationship("RiwayatPenyerahan", back_populates="laporan", uselist=False)
 
-class Inventaris(Base):
-    __tablename__ = "inventaris"
+class RiwayatPenyerahan(Base):
+    __tablename__ = "riwayat_penyerahan"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    barang_id = Column(String(36), ForeignKey("barang.id"), unique=True)
-    jumlah_barang = Column(Integer, default=1)
+    laporan_id = Column(String(36), ForeignKey("laporan.id"), unique=True)
+    petugas_id = Column(String(36), ForeignKey("users.id"))
+    
+    nama_barang = Column(String)
+    penerima = Column(String) # Nama orang yang mengambil
+    tanggal_selesai = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    barang = relationship("Barang", back_populates="inventaris")
+    laporan = relationship("Laporan", back_populates="riwayat")
+    petugas = relationship("User", back_populates="riwayat_diserahkan")
 
 class LogAktivitas(Base):
     __tablename__ = "log_aktivitas"
