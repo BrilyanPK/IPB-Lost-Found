@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="frontend/public/assets/logo-balikin.png" alt="Balikin Logo" width="400"/>
+</div>
+
 # Balikin 🔍
 
 **Balikin** adalah sebuah platform digital terpusat yang dirancang khusus untuk mengatasi permasalahan pelaporan dan pencarian barang hilang di lingkungan kampus Institut Pertanian Bogor (IPB). Sistem ini menggantikan metode pelaporan informal (seperti grup WhatsApp atau platform X) menjadi sistem yang lebih terstruktur, terdokumentasi, dan mudah diakses oleh seluruh civitas akademik.
