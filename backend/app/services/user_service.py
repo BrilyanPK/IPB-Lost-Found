@@ -1,0 +1,105 @@
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+from app.models import User, RoleEnum
+from app.schemas.user import UserCreate, UserUpdate
+from app.core.security import get_password_hash, verify_password, create_access_token
+from app.services.activity_log_service import ActivityLogService
+
+
+class UserService:
+    @staticmethod
+    def register(db: Session, user_data: UserCreate) -> User:
+        existing = db.query(User).filter(User.email == user_data.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        if user_data.role != RoleEnum.PENCARI:
+            raise HTTPException(status_code=403, detail="Can only register as Pencari")
+
+        hashed_password = get_password_hash(user_data.password)
+        new_user = User(
+            full_name=user_data.full_name,
+            email=user_data.email,
+            hashed_password=hashed_password,
+            role=user_data.role
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        ActivityLogService.log(db, new_user.id, "REGISTER_USER", f"User {new_user.email} registered")
+        return new_user
+
+    @staticmethod
+    def login(db: Session, email: str, password: str, request_host: str) -> dict:
+        user = db.query(User).filter(User.email == email).first()
+        if not user or not verify_password(password, user.hashed_password):
+            ActivityLogService.log(
+                db, user.id if user else None, "LOGIN", f"Failed login attempt for {email} from {request_host}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        access_token = create_access_token(subject=user.id, role=user.role.value)
+
+        ActivityLogService.log(db, user.id, "LOGIN", f"User {user.email} logged in from {request_host}")
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    @staticmethod
+    def get_all(db: Session) -> list:
+        return db.query(User).all()
+
+    @staticmethod
+    def create_by_admin(db: Session, user_data: UserCreate, admin_user: User) -> User:
+        existing = db.query(User).filter(User.email == user_data.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        hashed_password = get_password_hash(user_data.password)
+        new_user = User(
+            full_name=user_data.full_name,
+            email=user_data.email,
+            hashed_password=hashed_password,
+            role=user_data.role
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        ActivityLogService.log(db, admin_user.id, "CREATE_USER", f"Admin created user {new_user.email} with role {new_user.role}")
+        return new_user
+
+    @staticmethod
+    def update_by_admin(db: Session, user_id: str, user_data: UserUpdate, admin_user: User) -> User:
+        db_user = db.query(User).filter(User.id == user_id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user_data.full_name:
+            db_user.full_name = user_data.full_name
+        if user_data.email:
+            db_user.email = user_data.email
+        if user_data.role:
+            db_user.role = user_data.role
+
+        db.commit()
+        db.refresh(db_user)
+
+        ActivityLogService.log(db, admin_user.id, "UPDATE_USER", f"Admin updated user {db_user.email}")
+        return db_user
+
+    @staticmethod
+    def delete_by_admin(db: Session, user_id: str, admin_user: User) -> dict:
+        db_user = db.query(User).filter(User.id == user_id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        email = db_user.email
+        db.delete(db_user)
+        db.commit()
+
+        ActivityLogService.log(db, admin_user.id, "DELETE_USER", f"Admin deleted user {email}")
+        return {"detail": "User deleted"}
