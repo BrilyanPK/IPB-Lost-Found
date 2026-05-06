@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Navbar } from '../../components/Navbar';
+import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -85,6 +86,7 @@ const LostReport = () => {
           </form>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 };

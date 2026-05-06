@@ -1,26 +1,214 @@
+import { Component } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FiMenu, FiX, FiUser, FiLogOut, FiChevronRight } from 'react-icons/fi';
+import { jwtDecode } from 'jwt-decode';
 
-import { Link, useNavigate } from 'react-router-dom';
+// Object Oriented Models
+class NavItem {
+  label: string;
+  path: string;
+  constructor(label: string, path: string) {
+    this.label = label;
+    this.path = path;
+  }
+}
 
-export const Navbar = () => {
-  const navigate = useNavigate();
+interface NavbarProps {
+  navigate: ReturnType<typeof useNavigate>;
+  location: ReturnType<typeof useLocation>;
+}
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+interface NavbarState {
+  isMobileMenuOpen: boolean;
+  isLoggedIn: boolean;
+  userName: string;
+}
+
+class NavbarComponent extends Component<NavbarProps, NavbarState> {
+  private navLinks: NavItem[];
+
+  constructor(props: NavbarProps) {
+    super(props);
+    this.navLinks = [
+      new NavItem('Beranda', '/home'),
+      new NavItem('Buat Laporan', '/report-lost'),
+      new NavItem('Daftar Kehilangan', '/lost-items'),
+      new NavItem('Laporanku', '/my-reports'),
+    ];
+
+    this.state = {
+      isMobileMenuOpen: false,
+      isLoggedIn: false,
+      userName: 'Nurcholis Saputra', // Fallback dari referensi
+    };
+  }
+
+  componentDidMount() {
+    this.checkAuthStatus();
+  }
+
+  componentDidUpdate(prevProps: NavbarProps) {
+    if (prevProps.location.pathname !== this.props.location.pathname) {
+      this.setState({ isMobileMenuOpen: false });
+      this.checkAuthStatus();
+    }
+  }
+
+  private checkAuthStatus = () => {
+    const token = localStorage.getItem('token');
+    let loggedIn = false;
+    let name = 'Nurcholis Saputra';
+
+    if (token) {
+      loggedIn = true;
+      try {
+        const decoded: any = jwtDecode(token);
+        if (decoded && decoded.sub) {
+           name = decoded.sub; 
+        }
+      } catch (e) {
+        // Abaikan jika token invalid
+      }
+    }
+    
+    this.setState({ isLoggedIn: loggedIn, userName: name });
   };
 
-  return (
-    <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50 border-b border-gray-100">
-      <img src="/assets/logo-balikin.png" alt="Balikin" className="h-10" />
-      <div className="flex items-center gap-6">
-        <Link to="/home" className="text-gray-600 hover:text-primary transition-colors font-medium">Beranda</Link>
-        <Link to="/report-lost" className="text-gray-600 hover:text-primary transition-colors font-medium">Buat Laporan</Link>
-        <Link to="/lost-items" className="text-gray-600 hover:text-primary transition-colors font-medium">Daftar Kehilangan</Link>
-        <Link to="/my-reports" className="text-gray-600 hover:text-primary transition-colors font-medium">Laporanku</Link>
-        <button onClick={handleLogout} className="ml-4 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-semibold transition-colors">
-          Logout
-        </button>
+  private handleLogout = () => {
+    localStorage.removeItem('token');
+    this.setState({ isLoggedIn: false, isMobileMenuOpen: false });
+    this.props.navigate('/login');
+  };
+
+  private toggleMenu = () => {
+    this.setState((prevState) => ({ isMobileMenuOpen: !prevState.isMobileMenuOpen }));
+  };
+
+  renderDesktopMenu() {
+    return (
+      <div className="hidden md:flex items-center justify-between flex-1 ml-16">
+        {/* Navigation Links (Centered area) */}
+        <div className="flex items-center gap-8 mx-auto">
+          {this.navLinks.map((link, idx) => {
+            const isActive = this.props.location.pathname.includes(link.path);
+            return (
+              <Link 
+                key={idx} 
+                to={link.path} 
+                className={`font-medium transition-colors hover:text-primary ${
+                  isActive ? 'text-primary' : 'text-gray-600'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right Action Area */}
+        <div className="flex items-center">
+          {this.state.isLoggedIn ? (
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100 transition shadow-sm">
+               <FiUser className="w-5 h-5" />
+            </div>
+          ) : (
+            <Link to="/login" className="text-gray-600 font-medium hover:text-primary transition-colors">Daftar</Link>
+          )}
+        </div>
       </div>
-    </nav>
-  );
+    );
+  }
+
+  renderMobileMenu() {
+    if (!this.state.isMobileMenuOpen) return null;
+
+    return (
+      <div className="md:hidden fixed inset-0 z-40 bg-white flex flex-col pt-[72px] px-6 animate-in slide-in-from-top-2">
+         {/* Links Stack */}
+         <div className="flex flex-col mt-4">
+           {this.navLinks.map((link, idx) => {
+              const isActive = this.props.location.pathname.includes(link.path);
+              return (
+                <Link 
+                  key={idx} 
+                  to={link.path} 
+                  className={`text-base py-5 border-b border-gray-100 ${
+                    isActive ? 'font-medium text-primary' : 'text-gray-600'
+                  }`}
+                  onClick={() => this.setState({ isMobileMenuOpen: false })}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+         </div>
+
+         {/* Bottom Section */}
+         <div className="mt-auto pb-8 pt-6">
+            {this.state.isLoggedIn && (
+               <div className="flex flex-col gap-6 mb-8">
+                  <div className="flex items-center justify-between border-t border-b border-gray-100 py-4 cursor-pointer hover:bg-gray-50 transition">
+                    <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-full border border-gray-200 text-gray-400 bg-gray-50 flex items-center justify-center shadow-sm">
+                          <FiUser className="w-5 h-5" />
+                       </div>
+                       <span className="font-bold text-gray-900 text-lg">{this.state.userName}</span>
+                    </div>
+                    <FiChevronRight className="text-gray-400" />
+                  </div>
+                  <button 
+                    onClick={this.handleLogout}
+                    className="flex items-center gap-2 text-red-500 border border-red-500 rounded-lg px-4 py-2 w-fit font-medium hover:bg-red-50 transition"
+                  >
+                     <FiLogOut /> Sign out
+                  </button>
+               </div>
+            )}
+            
+            <div className="text-sm text-gray-500">
+               © Copyright 2025, All Rights Reserved by Balikin
+            </div>
+         </div>
+      </div>
+    );
+  }
+
+  render() {
+    return (
+      <>
+        <nav className="bg-white px-6 py-4 flex items-center sticky top-0 z-50 shadow-sm border-b border-gray-100 relative">
+          {/* Logo */}
+          <Link to="/home" className="z-50 shrink-0">
+             <img src="/assets/logo-balikin.png" alt="Balikin" className="h-8 md:h-10" />
+          </Link>
+
+          {/* Desktop Nav */}
+          {this.renderDesktopMenu()}
+
+          {/* Mobile Toggle / Actions */}
+          <div className="flex md:hidden items-center gap-6 z-50 ml-auto">
+             {!this.state.isLoggedIn && !this.state.isMobileMenuOpen && (
+                <Link to="/login" className="text-gray-600 font-medium text-sm">Daftar</Link>
+             )}
+             <button 
+               onClick={this.toggleMenu}
+               className="text-gray-900 focus:outline-none"
+             >
+                {this.state.isMobileMenuOpen ? <FiX className="w-7 h-7" /> : <FiMenu className="w-7 h-7" />}
+             </button>
+          </div>
+        </nav>
+        
+        {/* Mobile Menu Overlay */}
+        {this.renderMobileMenu()}
+      </>
+    );
+  }
+}
+
+// HOC Wrapper untuk menyuntikkan Hooks ke Class Component (Mempertahankan OOP)
+export const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  return <NavbarComponent navigate={navigate} location={location} />;
 };

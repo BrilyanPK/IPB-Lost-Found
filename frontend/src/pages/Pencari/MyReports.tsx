@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
+import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import api from '../../api/axios';
@@ -78,6 +79,7 @@ const MyReports = () => {
           </div>
         </Card>
       </main>
+      <Footer />
 
       {selectedReport && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
