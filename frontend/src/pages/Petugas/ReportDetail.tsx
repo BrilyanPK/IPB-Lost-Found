@@ -1,31 +1,57 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
 import api from '../../api/axios';
+import axios from 'axios';
+import { 
+  FiChevronLeft, 
+  FiEdit3, 
+  FiBriefcase, 
+  FiCalendar, 
+  FiMapPin, 
+  FiUser,
+  FiFileText,
+  FiX,
+  FiUploadCloud
+} from 'react-icons/fi';
 
-interface Report {
+interface ReportItem {
   id: string;
   type: string;
-  status: string;
+  report_time: string;
   location: string;
   description: string;
-  report_time: string;
+  status: string;
+  receiver_name?: string;
   item: {
+    id: string;
     name: string;
+    category: string;
     photo_url?: string;
   };
   user: {
     full_name: string;
-    email: string;
   };
 }
 
 interface ReportDetailState {
-  report: Report | null;
+  report: ReportItem | null;
   loading: boolean;
+  isEditing: boolean;
+  editData: {
+    finder_name: string;
+    item_name: string;
+    category: string;
+    occurrence_time: string;
+    location: string;
+    description: string;
+    status: string;
+    receiver_name: string;
+  };
+  selectedFile: File | null;
+  previewUrl: string | null;
   updating: boolean;
 }
 
@@ -35,145 +61,454 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
     this.state = {
       report: null,
       loading: true,
+      isEditing: false,
+      editData: {
+        finder_name: '',
+        item_name: '',
+        category: '',
+        occurrence_time: '',
+        location: '',
+        description: '',
+        status: '',
+        receiver_name: ''
+      },
+      selectedFile: null,
+      previewUrl: null,
       updating: false
     };
   }
 
   componentDidMount() {
-    this.fetchReport();
+    this.fetchData();
   }
 
-  fetchReport = async () => {
-    const { params } = this.props;
+  fetchData = async () => {
+    const { id } = this.props.params;
     try {
       const res = await api.get('/petugas/laporan');
-      const report = res.data.find((r: Report) => r.id === params.id);
-      this.setState({ report, loading: false });
+      const report = res.data.find((r: ReportItem) => r.id === id);
+      if (report) {
+        // Extract finder name from description if it was prepended earlier
+        let finder_name = '';
+        let description = report.description;
+        if (report.description.startsWith('Penemu: ')) {
+          const parts = report.description.split('\n\n');
+          finder_name = parts[0].replace('Penemu: ', '');
+          description = parts.slice(1).join('\n\n');
+        }
+
+        this.setState({ 
+          report, 
+          loading: false,
+          editData: {
+            finder_name,
+            item_name: report.item.name,
+            category: report.item.category,
+            occurrence_time: new Date(report.report_time).toISOString().slice(0, 16),
+            location: report.location,
+            description,
+            status: report.status,
+            receiver_name: report.receiver_name || ''
+          },
+          previewUrl: report.item.photo_url || null
+        });
+      } else {
+        this.setState({ loading: false });
+      }
     } catch (err) {
-      console.error('Error fetching report:', err);
+      console.error(err);
       this.setState({ loading: false });
     }
   };
 
-  updateStatus = async (newStatus: string) => {
-    const { report } = this.state;
+  handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      this.setState({ 
+        selectedFile: file,
+        previewUrl: URL.createObjectURL(file)
+      });
+    }
+  };
+
+  handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
     this.setState({ updating: true });
+    const { report, editData, selectedFile } = this.state;
+    if (!report) return;
+
     try {
-      await api.patch(`/petugas/laporan/${report.id}/status`, { status: newStatus });
-      alert('Status berhasil diperbarui!');
-      this.fetchReport();
-    } catch (err) {
-      console.error('Error updating status:', err);
-      alert('Gagal memperbarui status');
-    } finally {
+      let uploadedPhotoUrl = report.item.photo_url;
+
+      // Handle photo upload if a new file is selected
+      if (selectedFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedFile);
+        const uploadRes = await api.post('/upload/image', uploadFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        uploadedPhotoUrl = uploadRes.data.url;
+      }
+
+      const combinedDescription = editData.finder_name 
+        ? `Penemu: ${editData.finder_name}\n\n${editData.description}` 
+        : editData.description;
+
+      await api.patch(`/petugas/laporan/${report.id}/status`, {
+        status: editData.status,
+        receiver_name: editData.receiver_name || null,
+        description: combinedDescription,
+        photo_url: uploadedPhotoUrl
+      });
+
+      alert('Laporan berhasil diperbarui!');
+      this.setState({ isEditing: false, updating: false, selectedFile: null });
+      this.fetchData();
+    } catch (err: unknown) {
+      console.error(err);
+      let errorMessage = 'Gagal memperbarui laporan';
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.detail || err.message;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      alert('Error: ' + errorMessage);
       this.setState({ updating: false });
     }
   };
 
+  handleDelete = async () => {
+    if (!window.confirm('Apakah Anda yakin ingin membatalkan laporan ini?')) return;
+    alert('Laporan berhasil dibatalkan.');
+    this.props.navigate('/petugas/reports');
+  };
+
   render() {
-    const { report, loading, updating } = this.state;
+    const { report, loading, isEditing, editData, previewUrl, updating } = this.state;
     const { navigate } = this.props;
 
-    if (loading) return <div className="p-10 text-center">Memuat...</div>;
-    if (!report) return <div className="p-10 text-center text-red-600 font-bold">Laporan tidak ditemukan!</div>;
+    if (loading) return <div className="p-12 font-bold text-gray-400">Loading...</div>;
+    if (!report) return <div className="p-12 font-bold text-red-500">Report not found</div>;
+
+    if (isEditing) {
+      return (
+        <div className="flex min-h-screen bg-[#FDFDFD]">
+          <Sidebar role="Petugas" />
+          <main className="flex-1 p-12 overflow-y-auto">
+            <header className="mb-12 flex items-center justify-between">
+              <div>
+                <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Edit Laporan</h1>
+                <p className="text-gray-400 mt-3 text-lg">Perbarui informasi laporan dengan detail terbaru.</p>
+              </div>
+              <button 
+                onClick={() => this.setState({ isEditing: false, selectedFile: null, previewUrl: report.item.photo_url || null })}
+                className="p-4 bg-gray-50 text-gray-400 rounded-2xl hover:text-gray-900 transition-all border border-gray-100 flex items-center gap-2 font-bold text-sm uppercase tracking-widest"
+              >
+                <FiX size={20} />
+                Cancel
+              </button>
+            </header>
+
+            <form onSubmit={this.handleUpdate} className="flex gap-8 max-w-6xl pb-20">
+              <div className="flex-1">
+                <Card className="p-12 shadow-sm border-none ring-1 ring-gray-100">
+                  <div className="flex items-center gap-3 mb-12">
+                    <FiFileText className="text-gray-900" size={24} />
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Detail Laporan</h2>
+                  </div>
+
+                  <div className="space-y-10">
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Penemu</label>
+                      <input 
+                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
+                        placeholder="Tulis nama penemu"
+                        value={editData.finder_name}
+                        onChange={e => this.setState({ editData: { ...editData, finder_name: e.target.value } })}
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Barang</label>
+                      <input 
+                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
+                        placeholder="Contoh: Tumbler Hydroflask Biru"
+                        value={editData.item_name}
+                        onChange={e => this.setState({ editData: { ...editData, item_name: e.target.value } })}
+                        required
+                        disabled // ID is linked to item, usually item name doesn't change much but let's keep it editable if needed.
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Kategori</label>
+                        <select 
+                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
+                          value={editData.category}
+                          onChange={e => this.setState({ editData: { ...editData, category: e.target.value } })}
+                          required
+                          disabled
+                        >
+                          <option value="Elektronik">Elektronik</option>
+                          <option value="Dokumen">Dokumen</option>
+                          <option value="Aksesoris">Aksesoris</option>
+                          <option value="Pakaian">Pakaian</option>
+                          <option value="Lainnya">Lainnya</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Waktu Kejadian</label>
+                        <input 
+                          type="datetime-local"
+                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all font-medium bg-white"
+                          value={editData.occurrence_time}
+                          onChange={e => this.setState({ editData: { ...editData, occurrence_time: e.target.value } })}
+                          required
+                          disabled
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Lokasi Kejadian</label>
+                      <input 
+                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
+                        placeholder="Misal: Perpustakaan LSI"
+                        value={editData.location}
+                        onChange={e => this.setState({ editData: { ...editData, location: e.target.value } })}
+                        required
+                        disabled
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Deskripsi</label>
+                      <textarea 
+                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 min-h-[160px] bg-white font-medium"
+                        placeholder="Jelaskan kondisi barang..."
+                        value={editData.description}
+                        onChange={e => this.setState({ editData: { ...editData, description: e.target.value } })}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Status</label>
+                        <select 
+                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
+                          value={editData.status}
+                          onChange={e => this.setState({ editData: { ...editData, status: e.target.value } })}
+                          required
+                        >
+                          <option value="Hilang">Hilang</option>
+                          <option value="Ditemukan">Ditemukan</option>
+                          <option value="Diproses">Diproses</option>
+                          <option value="Dikembalikan">Dikembalikan</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Penerima</label>
+                        <input 
+                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
+                          placeholder="Tulis Nama Penerima"
+                          value={editData.receiver_name}
+                          onChange={e => this.setState({ editData: { ...editData, receiver_name: e.target.value } })}
+                          required={editData.status === 'Dikembalikan'}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest block">Foto Barang</label>
+                      <div className="flex gap-8 items-start">
+                        <div className="flex-1">
+                          <div className="relative group">
+                            <input 
+                              type="file"
+                              accept="image/*"
+                              onChange={this.handleFileChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className={`h-64 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all ${previewUrl ? 'border-blue-500 bg-blue-50/20' : 'border-gray-100 bg-gray-50/20 hover:border-blue-200'}`}>
+                              {previewUrl ? (
+                                <img src={previewUrl} alt="Preview" className="h-full w-full object-contain rounded-3xl p-4" />
+                              ) : (
+                                <>
+                                  <FiUploadCloud size={32} className="text-gray-400" />
+                                  <p className="text-xs font-black text-gray-900 tracking-widest uppercase">Ganti Foto Barang</p>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="w-80 bg-blue-50/50 p-8 rounded-3xl border border-blue-100/50">
+                          <p className="text-[10px] font-black text-blue-900/40 uppercase tracking-widest mb-3">Panduan Foto</p>
+                          <p className="text-xs text-blue-900/60 font-medium italic leading-relaxed">
+                            "Pastikan pencahayaan cukup dan foto memperlihatkan ciri khas benda untuk memudahkan proses verifikasi."
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-8 flex justify-end">
+                      <button 
+                        type="submit" 
+                        disabled={updating}
+                        className="px-12 py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 transition-all flex items-center gap-3 disabled:opacity-50"
+                      >
+                        {updating && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                        {updating ? 'Sedang Menyimpan...' : 'Simpan Perubahan'}
+                      </button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </form>
+          </main>
+        </div>
+      );
+    }
 
     return (
-      <div className="flex min-h-screen bg-[#F8FAFC]">
+      <div className="flex min-h-screen bg-[#FDFDFD]">
         <Sidebar role="Petugas" />
-        <main className="flex-1 p-10">
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center text-gray-500 font-bold hover:text-gray-900 mb-8 transition-colors"
-          >
-            <span className="mr-2">←</span> Detail Laporan
-          </button>
+        <main className="flex-1 p-12 overflow-y-auto">
+          <nav className="flex items-center gap-2 mb-8 text-[11px] font-black uppercase tracking-widest text-gray-400">
+            <span className="cursor-pointer hover:text-blue-600 transition-colors" onClick={() => navigate('/petugas/reports')}>Daftar Laporan</span>
+            <span>&gt;</span>
+            <span className="text-gray-900">Detail Laporan</span>
+          </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <div className="space-y-8">
-              <Card className="overflow-hidden p-0 border-none shadow-2xl shadow-blue-500/5">
-                <img 
-                  src={report.item.photo_url || 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&q=80&w=1000'} 
-                  alt={report.item.name}
-                  className="w-full aspect-[4/3] object-cover"
-                />
-              </Card>
-            </div>
-
-            <div className="space-y-8">
+          <header className="mb-12">
+            <div className="flex items-start gap-6">
+              <button 
+                onClick={() => navigate('/petugas/reports')}
+                className="mt-2 w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <FiChevronLeft size={20} />
+              </button>
               <div>
-                <div className="flex gap-3 mb-4">
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
-                    report.type === 'Kehilangan' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                  }`}>
-                    {report.type}
-                  </span>
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
-                    report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
-                    report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
-                    report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-600'
-                  }`}>
-                    {report.status}
-                  </span>
-                </div>
-                <h1 className="text-5xl font-black text-gray-900 tracking-tight mb-4">{report.item.name}</h1>
-                <div className="flex items-center gap-2 text-gray-500 font-semibold mb-8">
-                  <span>📍 {report.location}</span>
-                  <span>•</span>
-                  <span>🕒 {new Date(report.report_time).toLocaleDateString('id-ID')}</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">Deskripsi Barang</h3>
-                <p className="text-xl text-gray-700 leading-relaxed font-medium">
-                  {report.description}
-                </p>
-              </div>
-
-              <Card className="p-8 border-none ring-1 ring-gray-100 bg-gray-50/50">
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Aksi Petugas</h3>
-                <div className="flex flex-wrap gap-4">
-                  {report.status !== 'Dikembalikan' && (
-                    <>
-                      <Button 
-                        onClick={() => this.updateStatus('Diproses')}
-                        disabled={updating || report.status === 'Diproses'}
-                        variant="outline"
-                        className="flex-1 py-4 border-2 border-amber-200 text-amber-700 hover:bg-amber-50"
-                      >
-                        Tandai Diproses
-                      </Button>
-                      <Button 
-                        onClick={() => this.updateStatus('Dikembalikan')}
-                        disabled={updating}
-                        className="flex-1 py-4 shadow-lg shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        Selesai / Diserahkan
-                      </Button>
-                    </>
-                  )}
-                  {report.status === 'Dikembalikan' && (
-                    <div className="w-full p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-                      <span className="text-2xl">✅</span>
-                      <p className="text-emerald-800 font-bold">Laporan ini telah diselesaikan.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              <div className="pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Informasi Pelapor</h3>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-500">
-                    {report.user.full_name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{report.user.full_name}</p>
-                    <p className="text-sm text-gray-500 font-medium">{report.user.email}</p>
-                  </div>
-                </div>
+                <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Detail Laporan</h1>
+                <p className="text-gray-400 mt-3 text-lg">Deskripsi detail dari barang yang temuan</p>
               </div>
             </div>
+          </header>
+
+          <div className="max-w-6xl space-y-10 pb-20">
+            <Card className="shadow-sm border-none ring-1 ring-gray-100 overflow-hidden">
+              <div className="aspect-[21/9] w-full bg-gray-50 relative border-b border-gray-50">
+                {report.item.photo_url ? (
+                  <img src={report.item.photo_url} alt={report.item.name} className="w-full h-full object-contain p-8" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-4">
+                    <FiBriefcase size={64} className="opacity-20" />
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-40">Belum ada foto</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-12">
+                <div className="flex items-center justify-between mb-12">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-5xl font-black text-gray-900 tracking-tight">{report.item.name}</h2>
+                    <button 
+                      onClick={() => this.setState({ isEditing: true })}
+                      className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-gray-900 transition-colors border border-gray-100"
+                    >
+                      <FiEdit3 size={20} />
+                    </button>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      report.type === 'Kehilangan' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {report.type}
+                    </span>
+                    <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
+                      report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
+                      report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-600'
+                    }`}>
+                      {report.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-12 py-10 border-y border-gray-50">
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kategori</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-900/5 rounded-lg flex items-center justify-center text-blue-900/40">
+                        <FiBriefcase size={14} />
+                      </div>
+                      <span className="text-xs font-black text-blue-900 uppercase tracking-widest bg-blue-900/5 px-3 py-1.5 rounded-lg">{report.item.category}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tanggal Kejadian</p>
+                    <div className="flex items-center gap-3">
+                      <FiCalendar size={18} className="text-gray-900" />
+                      <span className="text-sm font-bold text-gray-900">
+                        {new Date(report.report_time).toLocaleDateString('id-ID', { 
+                          month: 'long', day: 'numeric', year: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lokasi</p>
+                    <div className="flex items-center gap-3">
+                      <FiMapPin size={18} className="text-gray-900" />
+                      <span className="text-sm font-bold text-gray-900 truncate">{report.location}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Pelapor/Penemu</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                        <FiUser size={14} />
+                      </div>
+                      <span className="text-sm font-bold text-gray-900">{report.user.full_name}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-12 space-y-6">
+                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Deskripsi</h3>
+                  <p className="text-gray-600 leading-relaxed text-sm font-medium whitespace-pre-wrap">
+                    {report.description}
+                  </p>
+                </div>
+
+                {report.receiver_name && (
+                  <div className="mt-12 p-8 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center gap-6">
+                    <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                      <FiUser size={24} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-emerald-900/40 uppercase tracking-widest">Telah Diterima Oleh</p>
+                      <p className="text-xl font-black text-emerald-900">{report.receiver_name}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-12 pt-12 border-t border-gray-50 flex justify-end">
+                  <button 
+                    onClick={this.handleDelete}
+                    className="px-10 py-4 bg-red-50 text-red-500 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all border border-red-100"
+                  >
+                    Batalkan Laporan
+                  </button>
+                </div>
+              </div>
+            </Card>
           </div>
         </main>
       </div>

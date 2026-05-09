@@ -9,6 +9,8 @@ class ReportBase(BaseModel):
     type: ReportTypeEnum
     location: str
     description: str
+    report_time: datetime | None = None
+    receiver_name: str | None = None
 
 
 class ReportCreate(ReportBase):
@@ -29,4 +31,7 @@ class ReportResponse(ReportBase):
 
 
 class ReportUpdate(BaseModel):
-    status: ReportStatusEnum
+    status: ReportStatusEnum | None = None
+    receiver_name: str | None = None
+    description: str | None = None
+    photo_url: str | None = None

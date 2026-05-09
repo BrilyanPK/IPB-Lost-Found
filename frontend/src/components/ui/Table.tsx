@@ -23,16 +23,16 @@ export class Table<T> extends Component<TableProps<T>> {
 
     return (
       <div className="overflow-x-auto w-full">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-center border-collapse">
           <thead>
             <tr className="bg-gray-50/80 border-b border-gray-100/80">
               {columns.map((col) => (
                 <th 
                   key={String(col.key)} 
-                  className={`px-6 py-4 text-sm font-bold text-gray-700 tracking-wide ${col.sortable ? 'cursor-pointer select-none hover:text-blue-600 transition-colors' : ''}`}
+                  className={`px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest ${col.sortable ? 'cursor-pointer select-none hover:text-blue-600 transition-colors' : ''}`}
                   onClick={() => col.sortable && onSort && onSort(String(col.key))}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-center gap-1">
                     {col.header}
                     {col.sortable && getSortIcon && getSortIcon(String(col.key))}
                   </div>
@@ -43,24 +43,24 @@ export class Table<T> extends Component<TableProps<T>> {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-500">
-                  <div className="flex justify-center items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    Memuat data...
+                <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-400">
+                  <div className="flex justify-center items-center gap-3">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-bold uppercase tracking-widest text-[10px]">Memuat data...</span>
                   </div>
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-400 font-medium bg-gray-50/30">
+                <td colSpan={columns.length} className="px-6 py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px] bg-gray-50/10">
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
               data.map((row, rowIndex) => (
-                <tr key={rowIndex} className="border-b border-gray-100 hover:bg-blue-50/40 transition-colors group">
+                <tr key={rowIndex} className="border-b border-gray-50 hover:bg-gray-50/50 transition-all duration-300 group">
                   {columns.map((col) => (
-                    <td key={String(col.key)} className="px-6 py-4 text-sm text-gray-600">
+                    <td key={String(col.key)} className="px-6 py-5 text-sm text-gray-600 font-medium">
                       {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key as string] || '')}
                     </td>
                   ))}

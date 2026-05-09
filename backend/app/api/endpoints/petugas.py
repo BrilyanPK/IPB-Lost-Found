@@ -2,16 +2,13 @@ from fastapi import APIRouter, Depends
 from typing import List
 from app.api.deps import SessionDep, CurrentUser, require_role
 from app.models import RoleEnum, ReportStatusEnum
-from app.schemas.report import ReportResponse, ReportUpdate
+from app.schemas.report import ReportCreate, ReportResponse, ReportUpdate
 from app.schemas.inventory import InventoryCreate, InventoryResponse
 from app.services.report_service import ReportService
 from app.services.inventory_service import InventoryService
 from app.services.dashboard_service import DashboardService
 
 router = APIRouter()
-
-
-from app.schemas.report import ReportCreate, ReportResponse, ReportUpdate
 
 @router.post(
     "/laporan",

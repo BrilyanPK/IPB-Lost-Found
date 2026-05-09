@@ -60,6 +60,7 @@ class Report(Base):
     report_time = Column(DateTime, default=datetime.utcnow)
     location = Column(String)
     description = Column(Text)
+    receiver_name = Column(String, nullable=True)
     status = Column(Enum(ReportStatusEnum), default=ReportStatusEnum.HILANG)
     created_at = Column(DateTime, default=datetime.utcnow)
 

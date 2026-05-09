@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models import Report, Item, User, ReportStatusEnum, ReportTypeEnum
@@ -24,6 +25,7 @@ class ReportService:
             item_id=db_item.id,
             location=report_data.location,
             description=report_data.description,
+            report_time=report_data.report_time or datetime.utcnow(),
             status=initial_status
         )
         db.add(db_report)
@@ -42,14 +44,22 @@ class ReportService:
         return db.query(Report).filter(Report.user_id == user_id).all()
 
     @staticmethod
-    def update_status(db: Session, report_id: str, new_status: ReportUpdate, user: User) -> Report:
+    def update_status(db: Session, report_id: str, report_update: ReportUpdate, user: User) -> Report:
         db_report = db.query(Report).filter(Report.id == report_id).first()
         if not db_report:
             raise HTTPException(status_code=404, detail="Report not found")
 
-        db_report.status = new_status.status
+        if report_update.status:
+            db_report.status = report_update.status
+        if report_update.receiver_name:
+            db_report.receiver_name = report_update.receiver_name
+        if report_update.description:
+            db_report.description = report_update.description
+        if report_update.photo_url:
+            db_report.item.photo_url = report_update.photo_url
+            
         db.commit()
         db.refresh(db_report)
 
-        ActivityLogService.log(db, user.id, "UPDATE_STATUS", f"Updated report #{db_report.id} status to {db_report.status}")
+        ActivityLogService.log(db, user.id, "UPDATE_REPORT", f"Updated report #{db_report.id}")
         return db_report
