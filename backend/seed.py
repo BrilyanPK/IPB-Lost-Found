@@ -5,8 +5,13 @@ from app.models import User, RoleEnum, Item, Report, ReportTypeEnum, ReportStatu
 from app.core.security import get_password_hash
 
 def seed_db():
-    print("Mereset database (drop all)...")
-    Base.metadata.drop_all(bind=engine)
+    print("Mereset database (drop all tables with CASCADE)...")
+    from sqlalchemy import text
+    with engine.connect() as connection:
+        # Menghapus semua tabel di schema public secara paksa
+        connection.execute(text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+        connection.commit()
+    
     print("Membuat ulang skema database (create all)...")
     Base.metadata.create_all(bind=engine)
 

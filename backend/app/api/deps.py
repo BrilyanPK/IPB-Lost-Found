@@ -46,7 +46,9 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 def require_role(roles: list[RoleEnum]):
     def role_checker(current_user: CurrentUser) -> User:
-        if current_user.role not in roles:
+        user_role_str = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+        role_values = [r.value if hasattr(r, 'value') else str(r) for r in roles]
+        if user_role_str not in role_values:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions",

@@ -7,10 +7,12 @@ import MyReports from './pages/Pencari/MyReports';
 import PetugasDashboard from './pages/Petugas/Dashboard';
 import InputFoundItem from './pages/Petugas/InputFoundItem';
 import ReportList from './pages/Petugas/ReportList';
+import ReportDetail from './pages/Petugas/ReportDetail';
 import HandoverHistory from './pages/Petugas/HandoverHistory';
 
 import AdminDashboard from './pages/Admin/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
+import CreateUser from './pages/Admin/CreateUser';
 import ActivityLog from './pages/Admin/ActivityLog';
 
 import Login from './pages/Login';
@@ -32,11 +34,13 @@ function App() {
           <Route path="/petugas/dashboard" element={<PetugasDashboard />} />
           <Route path="/petugas/input" element={<InputFoundItem />} />
           <Route path="/petugas/reports" element={<ReportList />} />
+          <Route path="/petugas/reports/:id" element={<ReportDetail />} />
           <Route path="/petugas/history" element={<HandoverHistory />} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/users/create" element={<CreateUser />} />
           <Route path="/admin/logs" element={<ActivityLog />} />
 
           {/* Auth Routes */}

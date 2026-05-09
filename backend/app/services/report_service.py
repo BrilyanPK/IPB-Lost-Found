@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models import Report, Item, User, ReportStatusEnum
+from app.models import Report, Item, User, ReportStatusEnum, ReportTypeEnum
 from app.schemas.report import ReportCreate, ReportUpdate
 from app.services.activity_log_service import ActivityLogService
 

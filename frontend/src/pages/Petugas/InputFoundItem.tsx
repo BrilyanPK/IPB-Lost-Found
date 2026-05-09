@@ -1,22 +1,39 @@
-import React, { useState } from 'react';
+import { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import api from '../../api/axios';
 
-const InputFoundItem = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'Elektronik',
-    location: '',
-    description: ''
-  });
-  const [loading, setLoading] = useState(false);
+interface InputState {
+  formData: {
+    name: string;
+    category: string;
+    location: string;
+    description: string;
+  };
+  loading: boolean;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
+class InputFoundItem extends Component<Record<string, never>, InputState> {
+  constructor(props: Record<string, never>) {
+    super(props);
+    this.state = {
+      formData: {
+        name: '',
+        category: 'Elektronik',
+        location: '',
+        description: ''
+      },
+      loading: false
+    };
+  }
+
+  handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    this.setState({ loading: true });
+    const { formData } = this.state;
+
     try {
       const reportRes = await api.post('/petugas/laporan', {
         type: 'Penemuan',
@@ -34,72 +51,86 @@ const InputFoundItem = () => {
       });
 
       alert('Barang temuan berhasil diinput dan ditambahkan ke inventaris!');
-      setFormData({ name: '', category: 'Elektronik', location: '', description: '' });
+      this.setState({
+        formData: { name: '', category: 'Elektronik', location: '', description: '' },
+        loading: false
+      });
     } catch (err) {
       console.error(err);
       alert('Gagal menginput barang temuan');
-    } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar role="Petugas" />
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Input Barang Temuan</h1>
-        <Card className="max-w-2xl p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Input 
-              label="Nama Barang" 
-              placeholder="Contoh: Dompet Hitam" 
-              required
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-            />
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Kategori</label>
-              <select 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
-                value={formData.category}
-                onChange={e => setFormData({...formData, category: e.target.value})}
-              >
-                <option value="Elektronik">Elektronik</option>
-                <option value="Dokumen">Dokumen</option>
-                <option value="Aksesoris">Aksesoris</option>
-                <option value="Kunci">Kunci</option>
-                <option value="Lainnya">Lainnya</option>
-              </select>
-            </div>
+  render() {
+    const { formData, loading } = this.state;
 
-            <Input 
-              label="Lokasi Ditemukan" 
-              placeholder="Contoh: Perpustakaan L1" 
-              required
-              value={formData.location}
-              onChange={e => setFormData({...formData, location: e.target.value})}
-            />
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Deskripsi Tambahan</label>
-              <textarea 
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 h-32 resize-none"
-                placeholder="Deskripsikan barang secara detail..."
+    return (
+      <div className="flex min-h-screen bg-[#F8FAFC]">
+        <Sidebar role="Petugas" />
+        <main className="flex-1 p-10">
+          <header className="mb-10">
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Input Temuan Baru</h1>
+            <p className="text-gray-500 mt-2">Daftarkan barang temuan baru ke dalam sistem Balikin.</p>
+          </header>
+
+          <Card className="max-w-3xl p-10 shadow-lg border-none ring-1 ring-gray-100">
+            <form onSubmit={this.handleSubmit} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Input 
+                  label="Nama Barang" 
+                  placeholder="Contoh: iPhone 13 Pro" 
+                  required
+                  value={formData.name}
+                  onChange={e => this.setState({ formData: { ...formData, name: e.target.value } })}
+                />
+                
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Kategori</label>
+                  <select 
+                    className="w-full px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 bg-white transition-all appearance-none cursor-pointer"
+                    value={formData.category}
+                    onChange={e => this.setState({ formData: { ...formData, category: e.target.value } })}
+                  >
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Dokumen">Dokumen</option>
+                    <option value="Aksesoris">Aksesoris</option>
+                    <option value="Kunci">Kunci</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+              </div>
+
+              <Input 
+                label="Lokasi Ditemukan" 
+                placeholder="Contoh: Kantin Stevia" 
                 required
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
+                value={formData.location}
+                onChange={e => this.setState({ formData: { ...formData, location: e.target.value } })}
               />
-            </div>
+              
+              <div className="space-y-3">
+                <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Deskripsi Tambahan</label>
+                <textarea 
+                  className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 h-40 resize-none transition-all placeholder:text-gray-400"
+                  placeholder="Berikan detail seperti warna, ciri khas, atau kondisi barang..."
+                  required
+                  value={formData.description}
+                  onChange={e => this.setState({ formData: { ...formData, description: e.target.value } })}
+                />
+              </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Menyimpan...' : 'Simpan ke Inventaris'}
-            </Button>
-          </form>
-        </Card>
-      </main>
-    </div>
-  );
-};
+              <div className="pt-4">
+                <Button type="submit" className="w-full py-4 text-lg shadow-xl shadow-blue-500/20" disabled={loading}>
+                  {loading ? 'Sedang Menyimpan...' : 'Simpan Laporan & Inventaris'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+}
 
 export default InputFoundItem;

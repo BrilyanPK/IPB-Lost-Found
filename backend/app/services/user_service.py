@@ -35,7 +35,7 @@ class UserService:
         user = db.query(User).filter(User.email == email).first()
         if not user or not verify_password(password, user.hashed_password):
             ActivityLogService.log(
-                db, user.id if user else None, "LOGIN", f"Failed login attempt for {email} from {request_host}"
+                db, user.id if user else None, "LOGIN", f"Gagal masuk sistem untuk {email}", ip_address=request_host, status="Peringatan"
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -45,7 +45,7 @@ class UserService:
 
         access_token = create_access_token(subject=user.id, role=user.role.value)
 
-        ActivityLogService.log(db, user.id, "LOGIN", f"User {user.email} logged in from {request_host}")
+        ActivityLogService.log(db, user.id, "LOGIN", f"Berhasil masuk sistem", ip_address=request_host, status="Berhasil")
         return {"access_token": access_token, "token_type": "bearer"}
 
     @staticmethod

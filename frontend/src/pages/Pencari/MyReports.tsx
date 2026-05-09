@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
@@ -7,10 +7,21 @@ import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useSort } from '../../hooks/useSort';
 
+interface UserReport {
+  id: string;
+  status: string;
+  location: string;
+  description: string;
+  report_time: string;
+  item: {
+    name: string;
+  };
+}
+
 const MyReports = () => {
-  const [reports, setReports] = useState<any[]>([]);
+  const [reports, setReports] = useState<UserReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReport, setSelectedReport] = useState<any | null>(null);
+  const [selectedReport, setSelectedReport] = useState<UserReport | null>(null);
   const navigate = useNavigate();
   const { sortedData, requestSort, getSortIcon } = useSort(reports);
 
@@ -19,8 +30,9 @@ const MyReports = () => {
       try {
         const res = await api.get('/pencari/laporan/me');
         setReports(res.data);
-      } catch (err: any) {
-        if (err.response?.status === 401) {
+      } catch (err: unknown) {
+        const error = err as { response?: { status?: number } };
+        if (error.response?.status === 401) {
           navigate('/login');
         }
       } finally {
@@ -57,7 +69,7 @@ const MyReports = () => {
                   <tr>
                     <td colSpan={5} className="px-6 py-4 text-center text-gray-500">Belum ada laporan.</td>
                   </tr>
-                ) : sortedData.map((report: any) => (
+                ) : sortedData.map((report) => (
                   <tr key={report.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">#REP-{report.id.toString().padStart(3, '0')}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{report.item.name}</td>

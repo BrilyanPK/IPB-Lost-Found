@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
@@ -7,12 +7,28 @@ import { Button } from '../../components/ui/Button';
 import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 
+interface LostItem {
+  id: string;
+  type: string;
+  status: string;
+  location: string;
+  description: string;
+  report_time: string;
+  item: {
+    name: string;
+    category: string;
+  };
+  user?: {
+    full_name: string;
+  };
+}
+
 const LostItems = () => {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<LostItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReport, setSelectedReport] = useState<any | null>(null);
+  const [selectedReport, setSelectedReport] = useState<LostItem | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,9 +36,10 @@ const LostItems = () => {
       try {
         const res = await api.get('/pencari/laporan');
         // Show only Lost reports for Pencari
-        setItems(res.data.filter((r: any) => r.type === 'Kehilangan'));
-      } catch (err: any) {
-        if (err.response?.status === 401) {
+        setItems(res.data.filter((r: LostItem) => r.type === 'Kehilangan'));
+      } catch (err: unknown) {
+        const error = err as { response?: { status?: number } };
+        if (error.response?.status === 401) {
           navigate('/login');
         } else {
           console.error("Gagal mengambil data", err);

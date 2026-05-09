@@ -6,6 +6,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { jwtDecode } from 'jwt-decode';
 
+interface DecodedToken {
+  role?: string;
+  sub?: string;
+}
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +22,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    console.log('Attempting login for:', email);
     
     try {
       const formData = new URLSearchParams();
@@ -28,19 +34,38 @@ const Login = () => {
       });
       
       const token = res.data.access_token;
+      console.log('Login successful, token received');
       localStorage.setItem('token', token);
       
-      const decoded: any = jwtDecode(token);
+      const decoded = jwtDecode<DecodedToken>(token);
+      console.log('Decoded token:', decoded);
       
-      if (decoded.role === 'Pencari' || decoded.role === 'pencari') {
+      const role = (decoded.role || '').toLowerCase();
+      console.log('Role identified:', role);
+      
+      if (role === 'pencari') {
         navigate('/home');
-      } else if (decoded.role === 'Petugas' || decoded.role === 'petugas') {
+      } else if (role === 'petugas') {
         navigate('/petugas/dashboard');
-      } else if (decoded.role === 'Admin' || decoded.role === 'admin') {
+      } else if (role === 'admin') {
         navigate('/admin/dashboard');
+      } else {
+        console.warn('Unknown role, redirecting to home');
+        navigate('/home');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login gagal, periksa kredensial Anda');
+    } catch (err: unknown) {
+      console.error('Login error details:', err);
+      const error = err as { response?: { data?: { detail?: unknown } } };
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Login gagal, periksa kredensial Anda';
+      
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (detail && typeof detail === 'object') {
+        errorMessage = JSON.stringify(detail);
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

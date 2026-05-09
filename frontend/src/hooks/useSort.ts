@@ -13,7 +13,7 @@ export function useSort<T>(data: T[]) {
   const sortedData = useMemo(() => {
     if (!sortConfig.key || !sortConfig.direction) return data;
 
-    return [...data].sort((a: any, b: any) => {
+    return [...data].sort((a, b) => {
       const keys = sortConfig.key.split('.');
       let valA = a;
       let valB = b;
@@ -25,7 +25,7 @@ export function useSort<T>(data: T[]) {
       if (valA == null) return 1;
       if (valB == null) return -1;
 
-      if (typeof valA === 'string') {
+      if (typeof valA === 'string' && typeof valB === 'string') {
         const cmp = valA.localeCompare(valB, 'id');
         return sortConfig.direction === 'asc' ? cmp : -cmp;
       }

@@ -1,69 +1,125 @@
-import React, { useEffect, useState } from 'react';
+import { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
+import { Table } from '../../components/ui/Table';
+import type { TableColumn } from '../../components/ui/Table';
 import api from '../../api/axios';
-import { useSort } from '../../hooks/useSort';
 
-const HandoverHistory = () => {
-  const [reports, setReports] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { sortedData, requestSort, getSortIcon } = useSort(reports);
+interface ReportItem {
+  id: string;
+  type: string;
+  report_time: string;
+  location: string;
+  status: string;
+  item: {
+    name: string;
+    category: string;
+  };
+  user: {
+    full_name: string;
+  };
+}
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
+interface HistoryState {
+  reports: ReportItem[];
+  loading: boolean;
+  totalHistory: number;
+}
 
-  const fetchReports = async () => {
+class HandoverHistory extends Component<Record<string, never>, HistoryState> {
+  constructor(props: Record<string, never>) {
+    super(props);
+    this.state = {
+      reports: [],
+      loading: true,
+      totalHistory: 0
+    };
+  }
+
+  componentDidMount() {
+    this.fetchReports();
+  }
+
+  fetchReports = async () => {
     try {
       const res = await api.get('/petugas/riwayat');
-      setReports(res.data);
+      this.setState({ 
+        reports: res.data, 
+        totalHistory: res.data.length,
+        loading: false 
+      });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar role="Petugas" />
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Riwayat Penyerahan</h1>
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('id')}>ID Laporan{getSortIcon('id')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('item.name')}>Nama Barang{getSortIcon('item.name')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('user.full_name')}>Penerima{getSortIcon('user.full_name')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('report_time')}>Tanggal Laporan{getSortIcon('report_time')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={5} className="text-center py-4">Memuat...</td></tr>
-                ) : sortedData.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-4 text-gray-500">Belum ada riwayat penyerahan.</td></tr>
-                ) : sortedData.map((report: any) => (
-                  <tr key={report.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">#REP-{report.id}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{report.item.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{report.user.full_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(report.report_time).toLocaleDateString('id-ID')}</td>
-                    <td className="px-6 py-4">
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-medium">Selesai / Diserahkan</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  render() {
+    const { reports, loading, totalHistory } = this.state;
+
+    const columns: TableColumn<ReportItem>[] = [
+      { 
+        key: 'id', 
+        header: 'ID Laporan',
+        render: (report) => <span className="text-blue-600 font-bold">#{report.id.substring(0, 5).toUpperCase()}</span>
+      },
+      { 
+        key: 'item', 
+        header: 'Nama Barang',
+        render: (report) => <span className="font-semibold text-gray-800">{report.item.name}</span>
+      },
+      { 
+        key: 'category', 
+        header: 'Tipe Barang',
+        render: (report) => <span className="text-gray-600">{report.item.category}</span>
+      },
+      { 
+        key: 'user', 
+        header: 'Penerima',
+        render: (report) => <span className="text-gray-800 font-medium">{report.user.full_name}</span>
+      },
+      { 
+        key: 'status', 
+        header: 'Status',
+        render: () => (
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600">
+            Selesai / Diserahkan
+          </span>
+        )
+      }
+    ];
+
+    return (
+      <div className="flex min-h-screen bg-[#F8FAFC]">
+        <Sidebar role="Petugas" />
+        <main className="flex-1 p-10">
+          <header className="mb-10">
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Riwayat Penyerahan</h1>
+            <p className="text-gray-500 mt-2">Daftar laporan yang telah selesai diproses dan barang telah diserahkan.</p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <Card className="p-6 border-none ring-1 ring-gray-100 flex items-center gap-4">
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-xl font-bold">H</div>
+              <div>
+                <p className="text-2xl font-black text-gray-900">{totalHistory}</p>
+                <p className="text-xs text-gray-500 font-semibold uppercase">Total Penyerahan</p>
+              </div>
+            </Card>
           </div>
-        </Card>
-      </main>
-    </div>
-  );
-};
+
+          <Card className="overflow-hidden shadow-sm">
+            <Table 
+              columns={columns} 
+              data={reports} 
+              loading={loading}
+              emptyMessage="Belum ada riwayat penyerahan."
+            />
+          </Card>
+        </main>
+      </div>
+    );
+  }
+}
 
 export default HandoverHistory;

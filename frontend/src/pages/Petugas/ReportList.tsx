@@ -1,95 +1,168 @@
-import React, { useEffect, useState } from 'react';
+import { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
+import { Table } from '../../components/ui/Table';
+import type { TableColumn } from '../../components/ui/Table';
+import { withRouter } from '../../utils/withRouter';
+import type { WithRouterProps } from '../../utils/withRouter';
 import api from '../../api/axios';
-import { useSort } from '../../hooks/useSort';
 
-const ReportList = () => {
-  const [reports, setReports] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { sortedData, requestSort, getSortIcon } = useSort(reports);
+interface ReportItem {
+  id: string;
+  type: string;
+  report_time: string;
+  location: string;
+  status: string;
+  item: {
+    name: string;
+    category: string;
+  };
+  user: {
+    full_name: string;
+  };
+}
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
+interface ReportListState {
+  reports: ReportItem[];
+  loading: boolean;
+  stats: {
+    total_laporan: number;
+    laporan_baru: number;
+  };
+}
 
-  const fetchReports = async () => {
+class ReportListComponent extends Component<WithRouterProps, ReportListState> {
+  constructor(props: WithRouterProps) {
+    super(props);
+    this.state = {
+      reports: [],
+      loading: true,
+      stats: {
+        total_laporan: 0,
+        laporan_baru: 0
+      }
+    };
+  }
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  fetchData = async () => {
     try {
-      const res = await api.get('/petugas/laporan');
-      setReports(res.data);
+      const [reportsRes, statsRes] = await Promise.all([
+        api.get('/petugas/laporan'),
+        api.get('/petugas/stats')
+      ]);
+      this.setState({ 
+        reports: reportsRes.data, 
+        stats: {
+          total_laporan: reportsRes.data.length,
+          laporan_baru: statsRes.data.reports_today
+        },
+        loading: false 
+      });
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
+      this.setState({ loading: false });
     }
   };
 
-  const updateStatus = async (id: number, newStatus: string) => {
-    try {
-      await api.patch(`/petugas/laporan/${id}/status`, { status: newStatus });
-      alert('Status berhasil diperbarui!');
-      fetchReports();
-    } catch (err) {
-      alert('Gagal memperbarui status');
-    }
-  };
+  render() {
+    const { reports, loading, stats } = this.state;
+    const { navigate } = this.props;
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar role="Petugas" />
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Daftar Laporan</h1>
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('id')}>ID Laporan{getSortIcon('id')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('type')}>Tipe{getSortIcon('type')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('user.full_name')}>Nama Pelapor{getSortIcon('user.full_name')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('item.name')}>Barang{getSortIcon('item.name')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-primary" onClick={() => requestSort('status')}>Status{getSortIcon('status')}</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={6} className="text-center py-4">Memuat...</td></tr>
-                ) : sortedData.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-4 text-gray-500">Belum ada laporan.</td></tr>
-                ) : sortedData.map((report: any) => (
-                  <tr key={report.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">#REP-{report.id}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{report.type}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{report.user.full_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{report.item.name}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs px-2 py-1 rounded font-medium ${
-                        report.status === 'Dikembalikan' ? 'bg-green-100 text-green-800' : 
-                        report.status === 'Ditemukan' ? 'bg-blue-100 text-blue-800' :
-                        report.status === 'Diproses' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {report.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-2">
-                      {report.status === 'Hilang' && (
-                        <Button variant="outline" className="py-1 px-3 text-sm" onClick={() => updateStatus(report.id, 'Diproses')}>Proses</Button>
-                      )}
-                      {report.status !== 'Dikembalikan' && (
-                        <Button className="py-1 px-3 text-sm" onClick={() => updateStatus(report.id, 'Dikembalikan')}>Selesai</Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    const columns: TableColumn<ReportItem>[] = [
+      { 
+        key: 'id', 
+        header: 'ID Laporan',
+        render: (report) => <span className="text-blue-600 font-bold">#{report.id.substring(0, 5).toUpperCase()}</span>
+      },
+      { 
+        key: 'item', 
+        header: 'Nama Barang',
+        render: (report) => <span className="font-semibold text-gray-800">{report.item.name}</span>
+      },
+      { key: 'location', header: 'Lokasi' },
+      { 
+        key: 'type', 
+        header: 'Tipe Laporan',
+        render: (report) => (
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+            report.type === 'Kehilangan' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+          }`}>
+            {report.type}
+          </span>
+        )
+      },
+      { 
+        key: 'status', 
+        header: 'Status',
+        render: (report) => (
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+            report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
+            report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
+            report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-600'
+          }`}>
+            {report.status}
+          </span>
+        )
+      },
+      {
+        key: 'actions',
+        header: '',
+        render: (report) => (
+          <button 
+            onClick={() => navigate(`/petugas/reports/${report.id}`)}
+            className="text-blue-600 font-bold hover:underline"
+          >
+            Detail
+          </button>
+        )
+      }
+    ];
+
+    return (
+      <div className="flex min-h-screen bg-[#F8FAFC]">
+        <Sidebar role="Petugas" />
+        <main className="flex-1 p-10">
+          <header className="mb-10">
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Daftar Laporan</h1>
+            <p className="text-gray-500 mt-2">Kelola dan pantau semua laporan yang masuk ke sistem.</p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <Card className="p-6 border-none ring-1 ring-gray-100 flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-xl font-bold">L</div>
+              <div>
+                <p className="text-2xl font-black text-gray-900">{stats.total_laporan}</p>
+                <p className="text-xs text-gray-500 font-semibold uppercase">Total Laporan</p>
+              </div>
+            </Card>
+            <Card className="p-6 border-none ring-1 ring-gray-100 flex items-center gap-4">
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 text-xl font-bold">N</div>
+              <div>
+                <p className="text-2xl font-black text-gray-900">{stats.laporan_baru}</p>
+                <p className="text-xs text-gray-500 font-semibold uppercase">Laporan Baru</p>
+              </div>
+            </Card>
           </div>
-        </Card>
-      </main>
-    </div>
-  );
-};
 
-export default ReportList;
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Daftar Laporan</h2>
+          </div>
+          <Card className="overflow-hidden shadow-sm">
+            <Table 
+              columns={columns} 
+              data={reports} 
+              loading={loading}
+              emptyMessage="Belum ada laporan."
+            />
+          </Card>
+        </main>
+      </div>
+    );
+  }
+}
+
+export default withRouter(ReportListComponent);

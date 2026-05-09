@@ -4,11 +4,13 @@ from app.models import ActivityLog
 
 class ActivityLogService:
     @staticmethod
-    def log(db: Session, user_id: str, action: str, target_detail: str):
+    def log(db: Session, user_id: str, action: str, target_detail: str, ip_address: str = None, status: str = "Berhasil"):
         log_entry = ActivityLog(
             user_id=user_id,
             action=action,
-            target_detail=target_detail
+            target_detail=target_detail,
+            ip_address=ip_address,
+            status=status
         )
         db.add(log_entry)
         db.commit()

@@ -85,6 +85,8 @@ class ActivityLog(Base):
     user_id = Column(String(36), ForeignKey("users.id"))
     action = Column(String)
     target_detail = Column(String)
+    ip_address = Column(String, nullable=True)
+    status = Column(String, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="activity_logs")
