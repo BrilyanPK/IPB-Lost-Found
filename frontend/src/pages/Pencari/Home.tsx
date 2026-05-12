@@ -1,46 +1,32 @@
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Link } from 'react-router-dom';
+import HeroBg from '../../assets/Hero Bg.png';
 
 const Home = () => {
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+    <div className="flex-1 flex flex-col bg-gray-50 min-h-screen overflow-hidden">
       <Navbar />
-      
-      <main className="flex-1 px-8 py-12 max-w-7xl mx-auto w-full flex flex-col items-center justify-center">
-        <div className="text-center mb-16 mt-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">Sistem Pelaporan <span className="text-primary">Barang Hilang</span></h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Platform terpusat untuk melaporkan dan mencari barang hilang di lingkungan kampus IPB University.
-          </p>
-        </div>
 
-        <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
-          <Card className="p-8 flex flex-col items-center text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-            <div className="w-16 h-16 bg-blue-50 text-primary rounded-full flex items-center justify-center mb-6 text-2xl font-bold">
-              !
-            </div>
-            <h2 className="text-2xl font-bold mb-3 text-gray-800">Kehilangan Barang?</h2>
-            <p className="text-gray-500 mb-8 flex-1">Laporkan barang Anda yang hilang agar civitas akademik lain dan petugas dapat membantu mencarikannya.</p>
-            <Link to="/report-lost" className="w-full">
-              <Button className="w-full py-3">Buat Laporan Kehilangan</Button>
-            </Link>
-          </Card>
+      <main className="flex-1 w-full flex flex-col">
+        {/* Hero Section */}
+        <section
+          className="relative w-full bg-cover bg-center pt-24 pb-104 px-6 flex flex-col items-center min-h-[85vh] justify-start"
+          style={{ backgroundImage: `url('${HeroBg}')` }}
+        >
+          <div className="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10 mt-12">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl mb-6 tracking-tight leading-tight">
+              <span className="font-medium text-[#3B5B92]">Platform Bantuan</span> <span className="font-bold text-[#203D7C]">Kehilangan &</span> <br className="hidden md:block" />
+              <span className="font-bold text-[#203D7C]">Penemuan</span> <span className="font-medium text-[#3B5B92]">Barang IPB</span>
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-10">
+              Platform terintegrasi untuk melaporkan barang hilang dan menemukan pemiliknya dengan lebih mudah, aman, dan transparan.
+            </p>
+          </div>
+        </section>
 
-          <Card className="p-8 flex flex-col items-center text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-6 text-2xl font-bold">
-              ?
-            </div>
-            <h2 className="text-2xl font-bold mb-3 text-gray-800">Mencari Barang?</h2>
-            <p className="text-gray-500 mb-8 flex-1">Lihat daftar barang hilang yang dilaporkan atau temukan barang Anda di inventaris petugas.</p>
-            <Link to="/lost-items" className="w-full">
-              <Button variant="outline" className="w-full py-3">Lihat Daftar Kehilangan</Button>
-            </Link>
-          </Card>
-        </div>
+
       </main>
+
       <Footer />
     </div>
   );

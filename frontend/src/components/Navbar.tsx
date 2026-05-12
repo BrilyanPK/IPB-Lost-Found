@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMenu, FiX, FiUser, FiLogOut, FiChevronRight } from 'react-icons/fi';
 import { jwtDecode } from 'jwt-decode';
+import { ProfileDropdown } from './ProfileDropdown';
 
 // Object Oriented Models
 class NavItem {
@@ -108,9 +109,12 @@ class NavbarComponent extends Component<NavbarProps, NavbarState> {
         {/* Right Action Area */}
         <div className="flex items-center">
           {this.state.isLoggedIn ? (
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100 transition shadow-sm">
-               <FiUser className="w-5 h-5" />
-            </div>
+            <ProfileDropdown 
+              userName={this.state.userName} 
+              onLogout={this.handleLogout}
+              showName={false}
+              position="bottom"
+            />
           ) : (
             <Link to="/login" className="text-gray-600 font-medium hover:text-primary transition-colors">Daftar</Link>
           )}
@@ -146,22 +150,13 @@ class NavbarComponent extends Component<NavbarProps, NavbarState> {
          {/* Bottom Section */}
          <div className="mt-auto pb-8 pt-6">
             {this.state.isLoggedIn && (
-               <div className="flex flex-col gap-6 mb-8">
-                  <div className="flex items-center justify-between border-t border-b border-gray-100 py-4 cursor-pointer hover:bg-gray-50 transition">
-                    <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-full border border-gray-200 text-gray-400 bg-gray-50 flex items-center justify-center shadow-sm">
-                          <FiUser className="w-5 h-5" />
-                       </div>
-                       <span className="font-bold text-gray-900 text-lg">{this.state.userName}</span>
-                    </div>
-                    <FiChevronRight className="text-gray-400" />
-                  </div>
-                  <button 
-                    onClick={this.handleLogout}
-                    className="flex items-center gap-2 text-red-500 border border-red-500 rounded-lg px-4 py-2 w-fit font-medium hover:bg-red-50 transition"
-                  >
-                     <FiLogOut /> Sign out
-                  </button>
+               <div className="mb-6">
+                 <ProfileDropdown 
+                   userName={this.state.userName} 
+                   onLogout={this.handleLogout}
+                   showName={true}
+                   position="top"
+                 />
                </div>
             )}
             
