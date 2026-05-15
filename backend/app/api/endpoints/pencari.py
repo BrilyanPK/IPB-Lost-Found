@@ -24,7 +24,6 @@ def create_laporan(
 @router.get(
     "/laporan",
     response_model=List[ReportResponse],
-    dependencies=[Depends(require_role([RoleEnum.PENCARI]))]
 )
 def get_laporan(session: SessionDep, skip: int = 0, limit: int = 100):
     return ReportService.get_all(session, skip=skip, limit=limit)

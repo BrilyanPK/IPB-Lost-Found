@@ -5,10 +5,14 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import api from '../../api/axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiLock, FiUploadCloud, FiCamera } from 'react-icons/fi';
 
 const LostReport = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const isLoggedIn = !!token;
+
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -17,8 +21,18 @@ const LostReport = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
@@ -28,13 +42,26 @@ const LostReport = () => {
     setError('');
     
     try {
+      let uploadedPhotoUrl = '';
+
+      if (selectedFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedFile);
+        
+        const uploadRes = await api.post('/upload/image', uploadFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        uploadedPhotoUrl = uploadRes.data.url;
+      }
+
       await api.post('/pencari/laporan', {
         type: 'Kehilangan',
         location: formData.location,
         description: formData.description,
         item: {
           name: formData.name,
-          category: formData.category
+          category: formData.category,
+          photo_url: uploadedPhotoUrl || null
         }
       });
       alert('Laporan berhasil dikirim!');
@@ -54,37 +81,116 @@ const LostReport = () => {
   return (
     <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
       <Navbar />
-      <main className="flex-1 px-8 py-12 max-w-3xl mx-auto w-full">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Buat Laporan Kehilangan</h1>
-        <Card className="p-8">
-          {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required />
-              <Input label="Kategori" name="category" value={formData.category} onChange={handleChange} placeholder="Misal: Aksesoris" required />
-            </div>
-            <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required />
-            
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Deskripsi Detail</label>
-              <textarea 
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-h-[120px]"
-                placeholder="Deskripsikan barang secara detail (warna, isi, ciri khusus)..."
-                required
-              />
-            </div>
+      <main className="flex-1 px-8 py-12 max-w-5xl mx-auto w-full">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Buat Laporan Kehilangan</h1>
 
-            <div className="pt-4 flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>Batal</Button>
-              <Button type="submit" className="px-8" disabled={loading}>
-                {loading ? 'Mengirim...' : 'Kirim Laporan'}
-              </Button>
+        {!isLoggedIn ? (
+          <Card className="p-10 flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-6">
+              <FiLock className="w-10 h-10 text-[#203D7C]" />
             </div>
-          </form>
-        </Card>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Login Diperlukan</h2>
+            <p className="text-gray-500 max-w-md mb-8 leading-relaxed">
+              Untuk membuat laporan kehilangan, Anda harus login terlebih dahulu. 
+              Silakan login atau buat akun baru untuk melanjutkan.
+            </p>
+            <div className="flex gap-4">
+              <Link to="/login">
+                <Button className="px-8">Login</Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="outline" className="px-8">Buat Akun</Button>
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <Card className="p-8">
+            {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required />
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700">Kategori</label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all bg-white"
+                    required
+                  >
+                    <option value="" disabled>Pilih Kategori</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Dokumen">Dokumen</option>
+                    <option value="Aksesoris">Aksesoris</option>
+                    <option value="Pakaian">Pakaian</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+              </div>
+              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required />
+              
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Deskripsi Detail</label>
+                <textarea 
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-h-[120px]"
+                  placeholder="Deskripsikan barang secara detail (warna, isi, ciri khusus)..."
+                  required
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-gray-700 block">Foto Barang (Opsional)</label>
+                <div className="flex flex-col sm:flex-row gap-6 items-start">
+                  <div className="flex-1 space-y-4 w-full">
+                    <div className="relative group">
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className={`h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${previewUrl ? 'border-blue-500 bg-blue-50/20' : 'border-gray-300 bg-gray-50/50 hover:border-blue-300'}`}>
+                        {previewUrl ? (
+                          <img src={previewUrl} alt="Preview" className="h-full w-full object-contain rounded-2xl p-2" />
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                              <FiUploadCloud size={24} />
+                            </div>
+                            <div className="text-center px-4">
+                              <p className="text-[10px] font-black text-gray-700 tracking-widest uppercase">Klik untuk upload foto</p>
+                              <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest">PNG, JPG SAMPAI 10MB</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="w-full sm:w-64 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
+                    <div className="flex items-center gap-2 mb-2 text-blue-900/40">
+                      <FiCamera size={14} />
+                      <p className="text-[10px] font-black uppercase tracking-widest">Panduan Foto</p>
+                    </div>
+                    <p className="text-[11px] text-blue-900/60 font-medium italic leading-relaxed">
+                      "Opsional: Tambahkan foto barang (jika ada foto lama) untuk memudahkan pencari mencocokkan barang temuan dengan laporan Anda."
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-4">
+                <Button type="button" variant="outline" onClick={() => navigate(-1)}>Batal</Button>
+                <Button type="submit" className="px-8" disabled={loading}>
+                  {loading ? 'Mengirim...' : 'Kirim Laporan'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        )}
       </main>
       <Footer />
     </div>

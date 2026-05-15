@@ -116,7 +116,7 @@ class NavbarComponent extends Component<NavbarProps, NavbarState> {
               position="bottom"
             />
           ) : (
-            <Link to="/login" className="text-gray-600 font-medium hover:text-primary transition-colors">Daftar</Link>
+            <Link to="/login" className="text-gray-600 font-medium hover:text-primary transition-colors">Masuk</Link>
           )}
         </div>
       </div>
