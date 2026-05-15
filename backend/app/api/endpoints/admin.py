@@ -33,6 +33,15 @@ def get_users(session: SessionDep):
     return UserService.get_all(session)
 
 
+@router.get(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    dependencies=[Depends(require_role([RoleEnum.ADMIN]))]
+)
+def get_user(user_id: str, session: SessionDep):
+    return UserService.get_by_id(session, user_id)
+
+
 @router.put(
     "/users/{user_id}",
     response_model=UserResponse,

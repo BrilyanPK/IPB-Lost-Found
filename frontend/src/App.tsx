@@ -14,6 +14,8 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import CreateUser from './pages/Admin/CreateUser';
 import ActivityLog from './pages/Admin/ActivityLog';
+import UserDetail from './pages/Admin/UserDetail';
+import Profile from './pages/Profile';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -41,11 +43,15 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/users/create" element={<CreateUser />} />
+          <Route path="/admin/users/:id" element={<UserDetail />} />
           <Route path="/admin/logs" element={<ActivityLog />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* Shared Routes */}
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </BrowserRouter>

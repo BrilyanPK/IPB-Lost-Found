@@ -53,6 +53,13 @@ class UserService:
         return db.query(User).all()
 
     @staticmethod
+    def get_by_id(db: Session, user_id: str) -> User:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+
+    @staticmethod
     def create_by_admin(db: Session, user_data: UserCreate, admin_user: User) -> User:
         existing = db.query(User).filter(User.email == user_data.email).first()
         if existing:

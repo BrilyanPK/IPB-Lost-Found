@@ -8,7 +8,7 @@ import type { TableColumn } from '../../components/ui/Table';
 import api from '../../api/axios';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
-import { FiUsers, FiShield, FiSearch, FiFilter, FiUserPlus, FiTrash2, FiUserCheck } from 'react-icons/fi';
+import { FiUsers, FiShield, FiSearch, FiSliders, FiUserPlus, FiTrash2, FiUserCheck } from 'react-icons/fi';
 
 interface User {
   id: string;
@@ -17,19 +17,22 @@ interface User {
   role: string;
 }
 
+interface FilterState {
+  time: string[];
+  role: string[];
+}
+
 interface UserManagementState {
   users: User[];
   loading: boolean;
-  showEditModal: boolean;
   showFilterModal: boolean;
   searchTerm: string;
-  selectedRole: string;
-  formData: {
-    id: string;
-    full_name: string;
-    email: string;
-    role: string;
-  };
+  filters: FilterState;
+  tempFilters: FilterState;
+  currentPage: number;
+  entriesPerPage: number;
+  sortKey: string | null;
+  sortDirection: 'asc' | 'desc' | null;
 }
 
 class UserManagementComponent extends Component<WithRouterProps, UserManagementState> {
@@ -38,16 +41,14 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
     this.state = {
       users: [],
       loading: true,
-      showEditModal: false,
       showFilterModal: false,
       searchTerm: '',
-      selectedRole: '',
-      formData: {
-        id: '',
-        full_name: '',
-        email: '',
-        role: 'Pencari'
-      }
+      filters: { time: [], role: [] },
+      tempFilters: { time: [], role: [] },
+      currentPage: 1,
+      entriesPerPage: 5,
+      sortKey: null,
+      sortDirection: null
     };
   }
 
@@ -66,79 +67,113 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
     }
   };
 
-  openEditModal = (user: User) => {
-    this.setState({
-      showEditModal: true,
-      formData: {
-        id: user.id,
-        full_name: user.full_name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  };
-
-  closeEditModal = () => {
-    this.setState({ showEditModal: false });
-  };
-
-  handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { formData } = this.state;
-    try {
-      await api.put(`/admin/users/${formData.id}`, {
-        full_name: formData.full_name,
-        email: formData.email,
-        role: formData.role
-      });
-      this.closeEditModal();
-      this.fetchUsers();
-    } catch (err: unknown) {
-      console.error(err);
-    }
-  };
-
-  handleDelete = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-      try {
-        await api.delete(`/admin/users/${id}`);
-        this.fetchUsers();
-      } catch (err: unknown) {
-        console.error(err);
-      }
-    }
+  goToUserDetail = (id: string) => {
+    this.props.navigate(`/admin/users/${id}`);
   };
 
   handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchTerm: e.target.value });
+    this.setState({ searchTerm: e.target.value, currentPage: 1 });
+  };
+
+  handlePageChange = (page: number) => {
+    this.setState({ currentPage: page });
+  };
+
+  handleSort = (key: string) => {
+    this.setState(prevState => {
+      if (prevState.sortKey === key) {
+        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc' };
+        if (prevState.sortDirection === 'asc') return { sortKey: null, sortDirection: null };
+      }
+      return { sortKey: key, sortDirection: 'desc' };
+    });
   };
 
   toggleFilterModal = () => {
-    this.setState({ showFilterModal: !this.state.showFilterModal });
+    this.setState(prevState => ({
+      showFilterModal: !prevState.showFilterModal,
+      tempFilters: prevState.showFilterModal ? prevState.tempFilters : { ...prevState.filters }
+    }));
   };
 
-  setFilterRole = (role: string) => {
-    this.setState({ selectedRole: role, showFilterModal: false });
+  handleCheckboxChange = (category: keyof FilterState, option: string, checked: boolean) => {
+    this.setState(prevState => {
+      const newTempFilters = { ...prevState.tempFilters };
+      if (checked) {
+        newTempFilters[category] = [...newTempFilters[category], option];
+      } else {
+        newTempFilters[category] = newTempFilters[category].filter(item => item !== option);
+      }
+      return { tempFilters: newTempFilters };
+    });
+  };
+
+  applyFilters = () => {
+    this.setState(prevState => ({
+      showFilterModal: false,
+      currentPage: 1,
+      filters: { ...prevState.tempFilters }
+    }));
   };
 
   render() {
-    const { users, loading, showEditModal, showFilterModal, formData, searchTerm, selectedRole } = this.state;
+    const { users, loading, showFilterModal, searchTerm, filters, tempFilters, currentPage, entriesPerPage, sortKey, sortDirection } = this.state;
+
+    const now = new Date();
 
     const filteredUsers = users.filter(user => {
-      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesRole = selectedRole ? user.role === selectedRole : true;
-      return matchesSearch && matchesRole;
+      // Search
+      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Filter Time
+      if (filters.time.length > 0) {
+        const userDate = (user as any).created_at ? new Date((user as any).created_at) : new Date();
+        const diffTime = Math.abs(now.getTime() - userDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        let timeMatch = false;
+        if (filters.time.includes('Hari Ini') && diffDays <= 1) timeMatch = true;
+        if (filters.time.includes('7 Hari Terakhir') && diffDays <= 7) timeMatch = true;
+        if (filters.time.includes('30 Hari Terakhir') && diffDays <= 30) timeMatch = true;
+
+        if (!timeMatch) return false;
+      }
+
+      // Filter Role
+      if (filters.role.length > 0) {
+        if (!filters.role.includes(user.role)) return false;
+      }
+
+      return true;
     });
+
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+      if (!sortKey) return 0;
+
+      let valA: any = a[sortKey as keyof User];
+      let valB: any = b[sortKey as keyof User];
+
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const indexOfLast = currentPage * entriesPerPage;
+    const indexOfFirst = indexOfLast - entriesPerPage;
+    const currentUsers = sortedUsers.slice(indexOfFirst, indexOfLast);
 
     const columns: TableColumn<User>[] = [
       {
         key: 'full_name',
         header: 'Nama',
+        sortable: true,
+        width: '35%',
         render: (user) => (
-          <button 
-            onClick={() => this.openEditModal(user)}
-            className="text-blue-600 font-bold hover:underline text-left"
+          <button
+            onClick={() => this.goToUserDetail(user.id)}
+            className="text-blue-600 font-medium hover:underline text-left"
           >
             {user.full_name}
           </button>
@@ -147,33 +182,120 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
       {
         key: 'email',
         header: 'Email',
+        sortable: true,
+        width: '35%',
         render: (user) => <span className="text-gray-900 font-medium">{user.email}</span>
       },
       {
         key: 'role',
         header: 'Role',
-        render: (user) => (
-          <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-            user.role === 'Admin' ? 'bg-orange-50 text-orange-400' : 
-            user.role === 'Petugas' ? 'bg-blue-50 text-blue-400' : 'bg-emerald-50 text-emerald-400'
-          }`}>
-            {user.role}
-          </span>
-        )
-      },
-      {
-        key: 'actions',
-        header: '',
-        render: (user) => (
-          <button onClick={() => this.handleDelete(user.id)} className="text-red-400 hover:text-red-600 font-black text-xs uppercase tracking-widest p-2 rounded-lg hover:bg-red-50 transition-colors">
-            <FiTrash2 size={16} />
-          </button>
-        )
+        sortable: true,
+        width: '20%',
+        render: (user) => {
+          let bg = 'bg-emerald-50';
+          let text = 'text-emerald-600';
+          if (user.role === 'Admin') {
+            bg = 'bg-orange-50';
+            text = 'text-orange-400';
+          } else if (user.role === 'Petugas') {
+            bg = 'bg-blue-50';
+            text = 'text-blue-500';
+          }
+          return (
+            <span className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wide ${bg} ${text}`}>
+              {user.role}
+            </span>
+          );
+        }
       }
     ];
 
     const totalAdmin = users.filter(u => u.role === 'Admin').length;
     const totalPetugas = users.filter(u => u.role === 'Petugas').length;
+
+    const topContent = (
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        <h2 className="text-2xl font-black text-gray-900 tracking-tight">List Pengguna</h2>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:flex-initial">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search user..."
+              value={searchTerm}
+              onChange={this.handleSearch}
+              className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 w-full md:w-64 transition-all"
+            />
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={this.toggleFilterModal}
+              className={`p-2 border rounded-lg transition-colors flex items-center justify-center ${showFilterModal ? 'bg-gray-100 border-gray-300 text-gray-800' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+            >
+              <FiSliders size={18} />
+              {(filters.time.length > 0 || filters.role.length > 0) && (
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white translate-x-1/3 -translate-y-1/3"></span>
+              )}
+            </button>
+
+            {showFilterModal && (
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-[100] p-5">
+                <h3 className="text-sm font-bold text-gray-900 mb-4">Filter Users</h3>
+                <div className="space-y-4 max-h-72 overflow-y-auto custom-scrollbar">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-2">Rentang Waktu Dibuat</label>
+                    <div className="space-y-2">
+                      {['Hari Ini', '7 Hari Terakhir', '30 Hari Terakhir'].map(opt => (
+                        <label key={opt} className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                            checked={tempFilters.time.includes(opt)}
+                            onChange={(e) => this.handleCheckboxChange('time', opt, e.target.checked)}
+                          />
+                          {opt}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="w-full h-px bg-gray-100"></div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-2">Role</label>
+                    <div className="space-y-2 mb-2">
+                      {['Admin', 'Petugas', 'Pencari'].map(opt => (
+                        <label key={opt} className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                            checked={tempFilters.role.includes(opt)}
+                            onChange={(e) => this.handleCheckboxChange('role', opt, e.target.checked)}
+                          />
+                          {opt}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={this.applyFilters}
+                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors mt-2"
+                  >
+                    Terapkan Filter
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            className="px-6 py-2 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+            onClick={() => this.props.navigate('/admin/users/create')}
+          >
+            Buat Pengguna
+          </button>
+        </div>
+      </div>
+    );
 
     return (
       <div className="flex min-h-screen bg-[#F8FAFC]">
@@ -214,96 +336,23 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
             </Card>
           </div>
 
-          <Card className="overflow-hidden border-none ring-1 ring-gray-100 shadow-sm bg-white">
-            <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">User Registry</h2>
-              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                <div className="relative flex-1 md:flex-initial">
-                  <input 
-                    type="text" 
-                    placeholder="Search name or email..." 
-                    value={searchTerm}
-                    onChange={this.handleSearch}
-                    className="pl-12 pr-4 py-3 bg-gray-50 border-none ring-1 ring-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 w-full md:w-80 transition-all font-medium"
-                  />
-                  <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                </div>
-                
-                <div className="relative">
-                  <Button 
-                    variant="outline" 
-                    onClick={this.toggleFilterModal}
-                    className={`px-6 py-3 border-none ring-1 ring-gray-200 rounded-xl flex items-center gap-2 font-bold text-xs uppercase tracking-widest ${selectedRole ? 'bg-blue-50 ring-blue-200 text-blue-600' : ''}`}
-                  >
-                    <FiFilter size={16} />
-                    {selectedRole || 'Filter Role'}
-                  </Button>
-                  
-                  {showFilterModal && (
-                    <div className="absolute top-0 right-full mr-2 w-48 bg-white rounded-2xl shadow-2xl ring-1 ring-gray-100 z-[100] p-2 animate-in fade-in slide-in-from-right-2 duration-200">
-                      <button onClick={() => this.setFilterRole('')} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 text-xs font-black uppercase tracking-widest text-gray-600 transition-colors">Semua Role</button>
-                      <button onClick={() => this.setFilterRole('Admin')} className="w-full text-left px-4 py-3 rounded-xl hover:bg-orange-50 text-xs font-black uppercase tracking-widest text-orange-600 transition-colors">Admin</button>
-                      <button onClick={() => this.setFilterRole('Petugas')} className="w-full text-left px-4 py-3 rounded-xl hover:bg-blue-50 text-xs font-black uppercase tracking-widest text-blue-600 transition-colors">Petugas</button>
-                      <button onClick={() => this.setFilterRole('Pencari')} className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 text-xs font-black uppercase tracking-widest text-emerald-600 transition-colors">Pencari</button>
-                    </div>
-                  )}
-                </div>
-
-                <Button 
-                  className="px-8 py-3 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2" 
-                  onClick={() => this.props.navigate('/admin/users/create')}
-                >
-                  <FiUserPlus size={16} />
-                  Create User
-                </Button>
-              </div>
-            </div>
-            <Table 
-              columns={columns} 
-              data={filteredUsers} 
-              loading={loading}
-              emptyMessage={searchTerm || selectedRole ? "Tidak ada user yang cocok dengan filter." : "Belum ada pengguna terdaftar."}
-            />
-          </Card>
-
-          {showEditModal && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <Card className="max-w-md w-full p-10 animate-in fade-in zoom-in duration-300 shadow-2xl border-none">
-                <h2 className="text-3xl font-black mb-8 text-gray-900 tracking-tight">Edit Pengguna</h2>
-                <form onSubmit={this.handleEditSubmit} className="space-y-6">
-                  <Input 
-                    label="Nama Lengkap" 
-                    value={formData.full_name}
-                    onChange={e => this.setState({ formData: { ...formData, full_name: e.target.value } })}
-                    required 
-                  />
-                  <Input 
-                    label="Email Address" 
-                    type="email" 
-                    value={formData.email}
-                    onChange={e => this.setState({ formData: { ...formData, email: e.target.value } })}
-                    required 
-                  />
-                  <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Role</label>
-                    <select 
-                      className="w-full px-5 py-4 bg-gray-50 border-none ring-1 ring-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-bold text-gray-900"
-                      value={formData.role}
-                      onChange={e => this.setState({ formData: { ...formData, role: e.target.value } })}
-                    >
-                      <option value="Pencari">Pencari</option>
-                      <option value="Petugas">Petugas</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  </div>
-                  <div className="flex gap-4 mt-10">
-                    <Button type="button" variant="outline" className="flex-1 py-4 font-black text-xs uppercase tracking-widest border-none ring-1 ring-gray-200" onClick={this.closeEditModal}>Batal</Button>
-                    <Button type="submit" className="flex-1 py-4 font-black text-xs uppercase tracking-widest bg-blue-600 shadow-lg shadow-blue-500/20">Simpan</Button>
-                  </div>
-                </form>
-              </Card>
-            </div>
-          )}
+          <Table
+            columns={columns}
+            data={currentUsers}
+            loading={loading}
+            topContent={topContent}
+            sortKey={sortKey}
+            sortDirection={sortDirection as 'asc' | 'desc' | undefined}
+            onSort={this.handleSort}
+            emptyMessage={searchTerm || filters.time.length > 0 || filters.role.length > 0 ? "Tidak ada user yang cocok dengan filter." : "Belum ada pengguna terdaftar."}
+            pagination={{
+              currentPage,
+              totalPages: Math.ceil(filteredUsers.length / entriesPerPage),
+              totalEntries: filteredUsers.length,
+              entriesPerPage,
+              onPageChange: this.handlePageChange
+            }}
+          />
         </main>
       </div>
     );

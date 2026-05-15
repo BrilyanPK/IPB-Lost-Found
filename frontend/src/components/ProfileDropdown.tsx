@@ -1,5 +1,7 @@
 import React, { Component, createRef } from 'react';
 import { FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { withRouter } from '../utils/withRouter';
+import type { WithRouterProps } from '../utils/withRouter';
 
 interface ProfileDropdownProps {
   userName: string;
@@ -10,14 +12,16 @@ interface ProfileDropdownProps {
   position?: 'top' | 'bottom';
 }
 
+type Props = ProfileDropdownProps & WithRouterProps;
+
 interface ProfileDropdownState {
   isOpen: boolean;
 }
 
-export class ProfileDropdown extends Component<ProfileDropdownProps, ProfileDropdownState> {
+class ProfileDropdownComponent extends Component<Props, ProfileDropdownState> {
   private dropdownRef = createRef<HTMLDivElement>();
 
-  constructor(props: ProfileDropdownProps) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       isOpen: false
@@ -84,7 +88,8 @@ export class ProfileDropdown extends Component<ProfileDropdownProps, ProfileDrop
               className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors text-left"
               onClick={() => {
                 this.setState({ isOpen: false });
-                // Placeholder aksi profile
+                this.setState({ isOpen: false });
+                this.props.navigate('/profile');
               }}
             >
               <FiUser size={16} />
@@ -107,3 +112,5 @@ export class ProfileDropdown extends Component<ProfileDropdownProps, ProfileDrop
     );
   }
 }
+
+export const ProfileDropdown = withRouter(ProfileDropdownComponent);
