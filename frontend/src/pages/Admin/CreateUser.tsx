@@ -67,7 +67,7 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
               >
                 <FiArrowLeft size={24} />
               </button>
-              <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Membuat Akun</h1>
+              <h1 className="text-5xl font-bold text-gray-900 tracking-tighter">Membuat Akun</h1>
             </div>
           </header>
           
@@ -76,7 +76,7 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
                 <FiUserPlus size={20} />
               </div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Personal Information</h2>
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Personal Information</h2>
             </div>
 
             <form onSubmit={this.handleSubmit} className="space-y-8">
@@ -134,7 +134,7 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
               <div className="flex justify-end pt-6">
                 <Button 
                   type="submit" 
-                  className="px-12 py-4 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                  className="px-12 py-4 bg-blue-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                   disabled={loading}
                 >
                   {loading ? 'Processing...' : 'Simpan Akun'}

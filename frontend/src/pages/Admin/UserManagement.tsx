@@ -215,7 +215,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
 
     const topContent = (
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight">List Pengguna</h2>
+        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">List Pengguna</h2>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:flex-initial">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -240,9 +240,9 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
             </button>
 
             {showFilterModal && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-[100] p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-4">Filter Users</h3>
-                <div className="space-y-4 max-h-72 overflow-y-auto custom-scrollbar">
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-[100] p-5 flex flex-col max-h-96">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 flex-none">Filter Users</h3>
+                <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-2">Rentang Waktu Dibuat</label>
                     <div className="space-y-2">
@@ -276,9 +276,11 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
                       ))}
                     </div>
                   </div>
+                </div>
+                <div className="pt-4 mt-4 border-t border-gray-100 flex-none">
                   <button
                     onClick={this.applyFilters}
-                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors mt-2"
+                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Terapkan Filter
                   </button>
@@ -302,7 +304,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
         <Sidebar role="Admin" />
         <main className="flex-1 p-10">
           <header className="mb-10">
-            <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Manajemen Pengguna</h1>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tighter">Manajemen Pengguna</h1>
             <p className="text-gray-500 mt-2 text-lg font-medium">Manajemen akses sistem dan role pengguna</p>
           </header>
 
@@ -312,27 +314,27 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
                   <FiUsers size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total User</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total User</p>
               </div>
-              <p className="text-6xl font-black text-gray-900 tracking-tighter">{users.length.toString().padStart(2, '0')}</p>
+              <p className="text-6xl font-bold text-gray-900 tracking-tighter">{users.length.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-48 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500">
                   <FiShield size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Admin</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Admin</p>
               </div>
-              <p className="text-6xl font-black text-gray-900 tracking-tighter">{totalAdmin.toString().padStart(2, '0')}</p>
+              <p className="text-6xl font-bold text-gray-900 tracking-tighter">{totalAdmin.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-48 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
                   <FiUserCheck size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Petugas</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Petugas</p>
               </div>
-              <p className="text-6xl font-black text-gray-900 tracking-tighter">{totalPetugas.toString().padStart(2, '0')}</p>
+              <p className="text-6xl font-bold text-gray-900 tracking-tighter">{totalPetugas.toString().padStart(2, '0')}</p>
             </Card>
           </div>
 

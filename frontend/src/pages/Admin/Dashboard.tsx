@@ -310,10 +310,10 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
                 <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white translate-x-1/3 -translate-y-1/3"></span>
               )}
             </button>
-            {showFilterDropdown && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-4">Filter Logs</h3>
-                <div className="space-y-4 max-h-72 overflow-y-auto custom-scrollbar">
+             {showFilterDropdown && (
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-5 flex flex-col max-h-96">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 flex-none">Filter Logs</h3>
+                <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-2">Rentang Waktu</label>
                     <div className="space-y-2">
@@ -364,9 +364,11 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
                       ))}
                     </div>
                   </div>
+                </div>
+                <div className="pt-4 mt-4 border-t border-gray-100 flex-none">
                   <button 
                     onClick={this.applyFilters}
-                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors mt-2"
+                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Terapkan Filter
                   </button>
@@ -383,7 +385,7 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
         <Sidebar role="Admin" />
         <main className="flex-1 p-10">
           <header className="mb-10">
-            <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Dasbor</h1>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tighter">Dasbor</h1>
             <p className="text-gray-500 mt-2 text-lg font-medium">Monitoring aktivitas sistem secara real-time</p>
           </header>
           
@@ -393,36 +395,36 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
                 <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-500">
                   <FiActivity size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Login</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Login</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter">{stats.total_login.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter">{stats.total_login.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-44 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
                   <FiCheckCircle size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Login Sukses</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Login Sukses</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter text-blue-600">{stats.total_login_success.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter text-blue-600">{stats.total_login_success.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-44 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500">
                   <FiAlertTriangle size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Login Gagal</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Login Gagal</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter text-red-600">{stats.total_login_failed.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter text-red-600">{stats.total_login_failed.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-44 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500">
                   <FiLogOut size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Logout</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Logout</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter">{stats.total_logout.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter">{stats.total_logout.toString().padStart(2, '0')}</p>
             </Card>
           </div>
 
@@ -430,9 +432,9 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2">
                 <FiActivity size={18} className="text-blue-500" />
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Statistik Aktivitas Tahunan</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Statistik Aktivitas Tahunan</h3>
               </div>
-              <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+              <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 Data real-time berdasarkan log sistem
               </div>
             </div>

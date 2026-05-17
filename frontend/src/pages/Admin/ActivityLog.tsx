@@ -300,9 +300,9 @@ class ActivityLog extends Component<Record<string, never>, ActivityLogState> {
               )}
             </button>
             {showFilterDropdown && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-5">
-                <h3 className="text-sm font-bold text-gray-900 mb-4">Filter Logs</h3>
-                <div className="space-y-4 max-h-72 overflow-y-auto custom-scrollbar">
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg z-20 p-5 flex flex-col max-h-96">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 flex-none">Filter Logs</h3>
+                <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-2">Rentang Waktu</label>
                     <div className="space-y-2">
@@ -353,9 +353,11 @@ class ActivityLog extends Component<Record<string, never>, ActivityLogState> {
                       ))}
                     </div>
                   </div>
+                </div>
+                <div className="pt-4 mt-4 border-t border-gray-100 flex-none">
                   <button 
                     onClick={this.applyFilters}
-                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors mt-2"
+                    className="w-full py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Terapkan Filter
                   </button>
@@ -373,7 +375,7 @@ class ActivityLog extends Component<Record<string, never>, ActivityLogState> {
         <main className="flex-1 p-10">
           <header className="mb-10 flex justify-between items-end">
             <div>
-              <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Log Aktivitas</h1>
+              <h1 className="text-5xl font-bold text-gray-900 tracking-tighter">Log Aktivitas</h1>
               <p className="text-gray-500 mt-2 text-lg font-medium">Log Kendali Akses & Operasi Sistem</p>
             </div>
             <div className="p-3 bg-white ring-1 ring-gray-100 rounded-2xl shadow-sm flex items-center gap-2">
@@ -388,27 +390,27 @@ class ActivityLog extends Component<Record<string, never>, ActivityLogState> {
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
                   <FiActivity size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Health</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Health</p>
               </div>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.system_health}</p>
+              <p className="text-3xl font-bold text-gray-900 tracking-tight">{stats.system_health}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-44 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
                   <FiShield size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Logs</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Logs</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter">{stats.total_logs.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter">{stats.total_logs.toString().padStart(2, '0')}</p>
             </Card>
             <Card className="p-8 border-none ring-1 ring-gray-100 flex flex-col justify-between h-44 bg-white shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500">
                   <FiAlertTriangle size={20} />
                 </div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Alerts</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Alerts</p>
               </div>
-              <p className="text-5xl font-black text-gray-900 tracking-tighter text-red-600">{stats.security_alerts.toString().padStart(2, '0')}</p>
+              <p className="text-5xl font-bold text-gray-900 tracking-tighter text-red-600">{stats.security_alerts.toString().padStart(2, '0')}</p>
             </Card>
           </div>
 

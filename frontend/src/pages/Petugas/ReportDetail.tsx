@@ -197,7 +197,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
           <main className="flex-1 p-12 overflow-y-auto">
             <header className="mb-12 flex items-center justify-between">
               <div>
-                <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Edit Laporan</h1>
+                <h1 className="text-5xl font-bold text-gray-900 tracking-tight">Edit Laporan</h1>
                 <p className="text-gray-400 mt-3 text-lg">Perbarui informasi laporan dengan detail terbaru.</p>
               </div>
               <button 
@@ -392,7 +392,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                 <FiChevronLeft size={20} />
               </button>
               <div>
-                <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Detail Laporan</h1>
+                <h1 className="text-5xl font-bold text-gray-900 tracking-tight">Detail Laporan</h1>
                 <p className="text-gray-400 mt-3 text-lg">Deskripsi detail dari barang yang temuan</p>
               </div>
             </div>
@@ -470,7 +470,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Pelapor/Penemu</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Pelapor</p>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
                         <FiUser size={14} />

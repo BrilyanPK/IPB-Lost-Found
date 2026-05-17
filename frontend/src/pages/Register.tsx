@@ -37,8 +37,15 @@ const Register = () => {
       
       localStorage.setItem('token', res.data.access_token);
       navigate('/home');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registrasi gagal');
+    } catch (err: unknown) {
+      const error = err as {
+        response?: {
+          data?: {
+            detail?: string;
+          };
+        };
+      };
+      setError(error.response?.data?.detail || 'Registrasi gagal');
     } finally {
       setLoading(false);
     }

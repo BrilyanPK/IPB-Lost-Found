@@ -116,38 +116,42 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
         <Sidebar role="Petugas" />
         <main className="flex-1 p-12">
           <header className="mb-12">
-            <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
             <p className="text-gray-400 mt-3 text-lg">Selamat datang kembali, Petugas. Berikut adalah status operasional hari ini.</p>
           </header>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
             <Card className="p-10 hover:-translate-y-1">
-              <div className="flex justify-between items-start">
-                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100">
-                  <FiBox size={28} />
+              <div style={{ fontFamily: "'Roboto', sans-serif" }}>
+                <div className="flex justify-between items-start">
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100">
+                    <FiBox size={28} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400 uppercase tracking-widest">Total Inventori</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Total Inventori</p>
+                <div className="mt-8">
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_inventory.toString().padStart(3, '0')}</p>
+                  <p className="text-sm text-gray-400 mt-2">Barang di Pos</p>
                 </div>
-              </div>
-              <div className="mt-8">
-                <p className="text-6xl font-black text-gray-900">{stats.total_inventory.toString().padStart(3, '0')}</p>
-                <p className="text-sm text-gray-400 font-bold mt-2">Barang di Pos</p>
               </div>
             </Card>
 
             <Card className="p-10 hover:-translate-y-1">
-              <div className="flex justify-between items-start">
-                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100">
-                  <FiActivity size={28} />
+              <div style={{ fontFamily: "'Roboto', sans-serif" }}>
+                <div className="flex justify-between items-start">
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100">
+                    <FiActivity size={28} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400 uppercase tracking-widest">24 Jam Terakhir</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">24 Jam Terakhir</p>
+                <div className="mt-8">
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.reports_today.toString().padStart(2, '0')}</p>
+                  <p className="text-sm text-gray-400 mt-2">Laporan Baru Hari Ini</p>
                 </div>
-              </div>
-              <div className="mt-8">
-                <p className="text-6xl font-black text-gray-900">{stats.reports_today.toString().padStart(2, '0')}</p>
-                <p className="text-sm text-gray-400 font-bold mt-2">Laporan Baru Hari Ini</p>
               </div>
             </Card>
           </div>

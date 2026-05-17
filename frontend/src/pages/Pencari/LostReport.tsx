@@ -66,12 +66,20 @@ const LostReport = () => {
       });
       alert('Laporan berhasil dikirim!');
       navigate('/my-reports');
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as {
+        response?: {
+          status?: number;
+          data?: {
+            detail?: string;
+          };
+        };
+      };
+      if (error.response?.status === 401) {
         alert('Anda harus login terlebih dahulu!');
         navigate('/login');
       } else {
-        setError(err.response?.data?.detail || 'Gagal mengirim laporan');
+        setError(error.response?.data?.detail || 'Gagal mengirim laporan');
       }
     } finally {
       setLoading(false);
@@ -161,7 +169,7 @@ const LostReport = () => {
                               <FiUploadCloud size={24} />
                             </div>
                             <div className="text-center px-4">
-                              <p className="text-[10px] font-black text-gray-700 tracking-widest uppercase">Klik untuk upload foto</p>
+                              <p className="text-[10px] font-bold text-gray-700 tracking-widest uppercase">Klik untuk upload foto</p>
                               <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest">PNG, JPG SAMPAI 10MB</p>
                             </div>
                           </>
@@ -173,7 +181,7 @@ const LostReport = () => {
                   <div className="w-full sm:w-64 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
                     <div className="flex items-center gap-2 mb-2 text-blue-900/40">
                       <FiCamera size={14} />
-                      <p className="text-[10px] font-black uppercase tracking-widest">Panduan Foto</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest">Panduan Foto</p>
                     </div>
                     <p className="text-[11px] text-blue-900/60 font-medium italic leading-relaxed">
                       "Opsional: Tambahkan foto barang (jika ada foto lama) untuk memudahkan pencari mencocokkan barang temuan dengan laporan Anda."

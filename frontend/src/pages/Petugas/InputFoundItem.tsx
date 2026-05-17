@@ -124,7 +124,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
         <Sidebar role="Petugas" />
         <main className="flex-1 p-12 overflow-y-auto">
           <header className="mb-12">
-            <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Input Temuan Baru</h1>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tight">Input Temuan Baru</h1>
             <p className="text-gray-400 mt-3 text-lg">Dokumentasikan barang temuan dengan detail untuk proses verifikasi.</p>
           </header>
 
@@ -133,13 +133,14 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
               <Card className="p-10 shadow-sm border-none ring-1 ring-gray-100">
                 <div className="flex items-center gap-3 mb-10">
                   <FiFileText className="text-gray-900" size={24} />
-                  <h2 className="text-xl font-black text-gray-900 tracking-tight">Detail Laporan</h2>
+                  <h2 className="text-xl font-bold text-gray-900 tracking-tight">Detail Laporan</h2>
                 </div>
 
                 <div className="space-y-8">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Nama Penemu</label>
+                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Nama Penemu</label>
                     <input 
+                      style={{ fontFamily: "'Roboto', sans-serif" }}
                       className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
                       placeholder="Tulis nama penemu di sini"
                       value={formData.finder_name}
@@ -149,8 +150,9 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Nama Barang</label>
+                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Nama Barang</label>
                     <input 
+                      style={{ fontFamily: "'Roboto', sans-serif" }}
                       className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
                       placeholder="Contoh: Tumbler Hydroflask Biru 32oz"
                       value={formData.item_name}
@@ -161,8 +163,9 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
 
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">Kategori</label>
+                      <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Kategori</label>
                       <select 
+                        style={{ fontFamily: "'Roboto', sans-serif" }}
                         className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
                         value={formData.category}
                         onChange={e => this.setState({ formData: { ...formData, category: e.target.value } })}
@@ -178,9 +181,10 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">Waktu Kejadian</label>
+                      <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Waktu Kejadian</label>
                       <input 
                         type="datetime-local"
+                        style={{ fontFamily: "'Roboto', sans-serif" }}
                         className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all font-medium bg-white"
                         value={formData.occurrence_time}
                         onChange={e => this.setState({ formData: { ...formData, occurrence_time: e.target.value } })}
@@ -190,8 +194,9 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Lokasi Kejadian</label>
+                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Lokasi Kejadian</label>
                     <input 
+                      style={{ fontFamily: "'Roboto', sans-serif" }}
                       className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
                       placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
                       value={formData.location}
@@ -201,8 +206,9 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Deskripsi</label>
+                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Deskripsi</label>
                     <textarea 
+                      style={{ fontFamily: "'Roboto', sans-serif" }}
                       className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 min-h-[120px] bg-white font-medium"
                       placeholder="Jelaskan kondisi barang, ciri khas, atau detail lainnya..."
                       value={formData.description}
@@ -212,7 +218,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-sm font-bold text-gray-700 block">Foto Barang</label>
+                    <label className="text-sm font-bold text-gray-700 block" style={{ fontFamily: "'Roboto', sans-serif" }}>Foto Barang</label>
                     <div className="flex gap-6 items-start">
                       <div className="flex-1 space-y-4">
                         <div className="relative group">
@@ -231,7 +237,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                                   <FiUploadCloud size={24} />
                                 </div>
                                 <div className="text-center">
-                                  <p className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Klik untuk upload foto</p>
+                                  <p className="text-[10px] font-bold text-gray-900 tracking-widest uppercase">Klik untuk upload foto</p>
                                   <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest">PNG, JPG SAMPAI 10MB</p>
                                 </div>
                               </>
@@ -243,7 +249,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                       <div className="w-64 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
                         <div className="flex items-center gap-2 mb-2 text-blue-900/40">
                           <FiCamera size={14} />
-                          <p className="text-[10px] font-black uppercase tracking-widest">Panduan Foto</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest">Panduan Foto</p>
                         </div>
                         <p className="text-[11px] text-blue-900/60 font-medium italic leading-relaxed">
                           "Pastikan pencahayaan cukup dan foto memperlihatkan ciri khas benda untuk memudahkan proses verifikasi."
