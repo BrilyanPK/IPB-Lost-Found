@@ -51,7 +51,7 @@ python seed.py
 ```
 Jalankan Virtual Environment:
 ```bash
-.\venv\Scripts\uvicorn
+.\venv\Scripts\Activate
 ```
 Jalankan Server Backend:
 ```bash
