@@ -49,6 +49,10 @@ Jalankan skrip *Seed* untuk membuat tabel dan data awal (Admin, Petugas, Pencari
 ```bash
 python seed.py
 ```
+Jalankan Virtual Environment:
+```bash
+.\venv\Scripts\Activate
+```
 Jalankan Server Backend:
 ```bash
 uvicorn app.main:app --reload
