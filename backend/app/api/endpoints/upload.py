@@ -1,5 +1,6 @@
 import os
 import uuid
+import requests as http_requests
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from app.api.deps import CurrentUser
 from app.core.config import settings
@@ -18,16 +19,41 @@ async def upload_image(
     # Create unique filename
     extension = os.path.splitext(file.filename)[1]
     filename = f"{uuid.uuid4()}{extension}"
-    file_path = os.path.join("uploads", filename)
-    
-    # Save file
+
+    # Read file content
+    file_content = await file.read()
+
+    # Upload to Supabase Storage
+    upload_url = (
+        f"{settings.SUPABASE_URL}/storage/v1/object/"
+        f"{settings.SUPABASE_BUCKET}/{filename}"
+    )
+
+    headers = {
+        "apikey": settings.SUPABASE_KEY,
+        "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+        "Content-Type": file.content_type,
+    }
+
     try:
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        response = http_requests.post(
+            upload_url,
+            headers=headers,
+            data=file_content,
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}")
-    
-    # Return the URL to access the image
-    # Note: In production, use the actual domain
-    return {"url": f"http://127.0.0.1:8000/uploads/{filename}"}
+        raise HTTPException(status_code=500, detail=f"Could not connect to storage: {str(e)}")
+
+    if response.status_code not in [200, 201]:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Upload to storage failed: {response.text}"
+        )
+
+    # Return the public URL
+    public_url = (
+        f"{settings.SUPABASE_URL}/storage/v1/object/public/"
+        f"{settings.SUPABASE_BUCKET}/{filename}"
+    )
+
+    return {"url": public_url}
