@@ -202,7 +202,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
             text = 'text-blue-500';
           }
           return (
-            <span className={`px-4 py-1 rounded-full text-[10px] font-black tracking-wide ${bg} ${text}`}>
+            <span className={`px-4 py-1 rounded-full text-[10px] font-bold tracking-wide ${bg} ${text}`}>
               {user.role}
             </span>
           );
@@ -224,7 +224,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
               placeholder="Search user..."
               value={searchTerm}
               onChange={this.handleSearch}
-              className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 w-full md:w-64 transition-all"
+              className="pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary w-full md:w-64 transition-all"
             />
           </div>
 
@@ -314,7 +314,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
                   <FiUsers size={20} />
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total User</p>
+                <p className="text-[10px] font-bold text-gray-400 tracking-wide">Total User</p>
               </div>
               <p className="text-6xl font-bold text-gray-900 tracking-tighter">{users.length.toString().padStart(2, '0')}</p>
             </Card>
@@ -323,7 +323,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500">
                   <FiShield size={20} />
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Admin</p>
+                <p className="text-[10px] font-bold text-gray-400 tracking-wide">Total Admin</p>
               </div>
               <p className="text-6xl font-bold text-gray-900 tracking-tighter">{totalAdmin.toString().padStart(2, '0')}</p>
             </Card>
@@ -332,7 +332,7 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
                   <FiUserCheck size={20} />
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Petugas</p>
+                <p className="text-[10px] font-bold text-gray-400 tracking-wide">Total Petugas</p>
               </div>
               <p className="text-6xl font-bold text-gray-900 tracking-tighter">{totalPetugas.toString().padStart(2, '0')}</p>
             </Card>

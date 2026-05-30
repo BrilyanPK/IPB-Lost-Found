@@ -146,14 +146,13 @@ class Profile extends Component<Record<string, never>, ProfileState> {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="flex-1 py-4 font-black text-xs uppercase tracking-widest border-none ring-1 ring-gray-200 hover:bg-gray-50" 
                   onClick={() => this.setState({ isEditing: false, formData: { full_name: user.full_name, email: user.email } })}
                 >
                   Batal
                 </Button>
                 <Button 
                   type="submit" 
-                  className="flex-1 py-4 font-black text-xs uppercase tracking-widest bg-blue-600 shadow-lg shadow-blue-500/20 hover:bg-blue-700"
+                  disabled={loading}
                 >
                   Simpan Perubahan
                 </Button>
@@ -163,13 +162,13 @@ class Profile extends Component<Record<string, never>, ProfileState> {
         ) : (
           <div className="grid gap-6">
             <Card className="p-8 border-none ring-1 ring-gray-100 shadow-sm bg-white rounded-2xl flex flex-col md:flex-row md:items-center gap-6">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-4xl font-black text-gray-400 shrink-0">
-                {user.full_name.charAt(0).toUpperCase()}
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 shrink-0">
+                <FiUser size={48} />
               </div>
               <div className="flex-1">
                 <h2 className="text-3xl font-black text-gray-900 tracking-tight">{user.full_name}</h2>
                 <p className="text-gray-500 font-medium text-lg mt-1">{user.email}</p>
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mt-3 ${roleBg}`}>
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-wide mt-3 ${roleBg}`}>
                   <FiShield size={12} />
                   {user.role}
                 </div>
@@ -180,20 +179,20 @@ class Profile extends Component<Record<string, never>, ProfileState> {
               <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Informasi Akun</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
                     <FiUser size={14} /> ID Pengguna
                   </p>
                   <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100 break-all">{user.id}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
                     <FiMail size={14} /> Alamat Email Terdaftar
                   </p>
                   <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100">{user.email}</p>
                 </div>
                 {user.created_at && (
                   <div>
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
                       <FiCalendar size={14} /> Tanggal Bergabung
                     </p>
                     <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100">

@@ -170,7 +170,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
         header: 'Status',
         render: (report) => (
           <div className="flex justify-center">
-            <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+            <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide ${
               report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
               report.type === 'Penemuan' ? 'bg-blue-50 text-blue-600' :
               'bg-red-50 text-red-600'
@@ -199,7 +199,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                     <FiFileText size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">Total Aktif</p>
+                    <p className="text-xs text-gray-400 tracking-wide">Total Aktif</p>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -216,7 +216,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                     <FiCheckCircle size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">Selesai/Kembali</p>
+                    <p className="text-xs text-gray-400 tracking-wide">Selesai/Kembali</p>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -239,7 +239,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                     value={searchTerm}
                     onChange={this.handleSearch}
                     style={{ fontFamily: "'Roboto', sans-serif" }}
-                    className="pl-12 pr-6 py-3 bg-gray-50/50 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all text-sm font-medium w-80"
+                    className="pl-12 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-sm font-medium w-80"
                   />
                 </div>
                 <div className="relative">
@@ -312,7 +312,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
             />
 
             <div className="p-10 bg-white border-t border-gray-100 flex items-center justify-between">
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+              <p className="text-xs text-gray-400 font-bold tracking-wide">
                 Menampilkan {filteredReports.length} dari {reports.length} entri
               </p>
               <div className="flex items-center gap-2">

@@ -1,5 +1,10 @@
 import uuid
+from nanoid import generate
 from sqlalchemy import Column, String, Enum, DateTime, ForeignKey, Text, Integer
+
+def generate_prefixed_id(prefix: str, size: int = 10) -> str:
+    return f"{prefix}-{generate(size=size)}"
+
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -27,7 +32,7 @@ class ReportStatusEnum(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("USR"))
     full_name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
@@ -41,7 +46,7 @@ class User(Base):
 class Item(Base):
     __tablename__ = "items"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("ITM"))
     name = Column(String, index=True)
     category = Column(String, index=True)
     photo_url = Column(String, nullable=True)
@@ -53,10 +58,10 @@ class Item(Base):
 class Report(Base):
     __tablename__ = "reports"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("REP"))
     type = Column(Enum(ReportTypeEnum))
-    user_id = Column(String(36), ForeignKey("users.id"))
-    item_id = Column(String(36), ForeignKey("items.id"))
+    user_id = Column(String(21), ForeignKey("users.id"))
+    item_id = Column(String(21), ForeignKey("items.id"))
     report_time = Column(DateTime, default=datetime.utcnow)
     location = Column(String)
     description = Column(Text)
@@ -71,8 +76,8 @@ class Report(Base):
 class Inventory(Base):
     __tablename__ = "inventory"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    item_id = Column(String(36), ForeignKey("items.id"), unique=True)
+    id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("INV"))
+    item_id = Column(String(21), ForeignKey("items.id"), unique=True)
     quantity = Column(Integer, default=1)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -82,8 +87,8 @@ class Inventory(Base):
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"))
+    id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("LOG"))
+    user_id = Column(String(21), ForeignKey("users.id"))
     action = Column(String)
     target_detail = Column(String)
     ip_address = Column(String, nullable=True)

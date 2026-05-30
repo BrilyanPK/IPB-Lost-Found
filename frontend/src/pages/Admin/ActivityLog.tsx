@@ -286,7 +286,7 @@ class ActivityLog extends Component<Record<string, never>, ActivityLogState> {
               placeholder="Search logs..." 
               value={searchTerm}
               onChange={this.handleSearch}
-              className="pl-11 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full transition-all"
+              className="pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary w-full transition-all"
             />
           </div>
           <div className="relative">

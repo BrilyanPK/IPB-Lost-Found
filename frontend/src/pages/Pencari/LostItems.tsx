@@ -3,6 +3,8 @@ import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
+import { Input } from '../../components/ui/Input';
 import api from '../../api/axios';
 import { FiSearch, FiCalendar, FiMapPin, FiArrowRight, FiImage } from 'react-icons/fi';
 
@@ -61,52 +63,42 @@ const LostItems = () => {
           <p className="text-gray-500 max-w-2xl mx-auto">Bantu komunitas Anda menemukan barang yang hilang. Telusuri laporan kehilangan yang diajukan oleh sesama mahasiswa dan staf.</p>
         </div>
 
-        <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl mb-12 flex flex-col md:flex-row gap-4 items-end">
-          <div className="flex-1 w-full space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Cari Kata Kunci</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
-                <FiSearch />
-              </span>
-              <input 
-                type="text"
-                placeholder="Dompet, Kunci..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-medium text-sm"
-              />
-            </div>
-          </div>
+        <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl mb-12 flex flex-col md:flex-row gap-6 items-end">
+          <Input 
+            label="Cari Kata Kunci"
+            icon={<FiSearch />}
+            placeholder="Dompet, Kunci..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 w-full !mb-0"
+          />
           
-          <div className="flex-1 w-full space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Kategori</label>
-            <select 
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-medium text-sm text-gray-600"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="">Semua Kategori</option>
-              <option value="Elektronik">Elektronik</option>
-              <option value="Dokumen">Dokumen</option>
-              <option value="Aksesoris">Aksesoris</option>
-              <option value="Kunci">Kunci</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
-          </div>
+          <Select 
+            label="Kategori"
+            className="flex-1 w-full !mb-0"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            placeholder="Semua Kategori"
+            options={[
+              { label: "Elektronik", value: "Elektronik" },
+              { label: "Dokumen", value: "Dokumen" },
+              { label: "Aksesoris", value: "Aksesoris" },
+              { label: "Kunci", value: "Kunci" },
+              { label: "Lainnya", value: "Lainnya" }
+            ]}
+          />
 
-          <div className="flex-1 w-full space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Waktu</label>
-            <input 
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-medium text-sm text-gray-500"
-            />
-          </div>
+          <Input 
+            type="date"
+            label="Waktu"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="flex-1 w-full !mb-0 text-gray-500"
+          />
 
-          <button className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-sm shadow-blue-600/20 whitespace-nowrap text-sm">
+          <Button className="w-full md:w-auto px-8 whitespace-nowrap shadow-blue-600/20 shadow-sm">
             Terapkan Filter
-          </button>
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,7 +119,7 @@ const LostItems = () => {
               </div>
               <div className="p-6 flex flex-col flex-1 bg-white">
                 <div className="mb-3">
-                  <span className="bg-gray-100 text-gray-800 text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider">{report.item.category}</span>
+                  <span className="bg-gray-100 text-gray-800 text-[10px] px-2.5 py-1 rounded font-bold tracking-wide">{report.item.category}</span>
                 </div>
                 <h3 className="text-lg font-bold mb-4 text-gray-900">{report.item.name}</h3>
                 <div className="space-y-2 mb-6">

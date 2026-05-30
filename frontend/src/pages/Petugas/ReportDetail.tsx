@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
+import { Select } from '../../components/ui/Select';
+import { Input } from '../../components/ui/Input';
+import { Textarea } from '../../components/ui/Textarea';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
 import api from '../../api/axios';
@@ -202,7 +205,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
               </div>
               <button 
                 onClick={() => this.setState({ isEditing: false, selectedFile: null, previewUrl: report.item.photo_url || null })}
-                className="p-4 bg-gray-50 text-gray-400 rounded-2xl hover:text-gray-900 transition-all border border-gray-100 flex items-center gap-2 font-bold text-sm uppercase tracking-widest"
+                className="p-4 bg-gray-50 text-gray-400 rounded-2xl hover:text-gray-900 transition-all border border-gray-100 flex items-center gap-2 font-bold text-sm tracking-wide"
               >
                 <FiX size={20} />
                 Cancel
@@ -217,113 +220,99 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Detail Laporan</h2>
                   </div>
 
-                  <div className="space-y-10">
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Penemu</label>
-                      <input 
-                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                        placeholder="Tulis nama penemu"
-                        value={editData.finder_name}
-                        onChange={e => this.setState({ editData: { ...editData, finder_name: e.target.value } })}
-                      />
-                    </div>
+                  <div>
+                    <Input 
+                      label="Nama Penemu"
+                      placeholder="Tulis nama penemu"
+                      value={editData.finder_name}
+                      onChange={e => this.setState({ editData: { ...editData, finder_name: e.target.value } })}
+                      
+                    />
 
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Barang</label>
-                      <input 
-                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                        placeholder="Contoh: Tumbler Hydroflask Biru"
-                        value={editData.item_name}
-                        onChange={e => this.setState({ editData: { ...editData, item_name: e.target.value } })}
-                        required
-                        disabled // ID is linked to item, usually item name doesn't change much but let's keep it editable if needed.
-                      />
-                    </div>
+                    <Input 
+                      label="Nama Barang"
+                      placeholder="Contoh: Tumbler Hydroflask Biru"
+                      value={editData.item_name}
+                      onChange={e => this.setState({ editData: { ...editData, item_name: e.target.value } })}
+                      required
+                      disabled
+                      
+                    />
 
-                    <div className="grid grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Kategori</label>
-                        <select 
-                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
+                    <div className="grid grid-cols-2 gap-6">
+                        <Select 
+                          label="Kategori"
                           value={editData.category}
                           onChange={e => this.setState({ editData: { ...editData, category: e.target.value } })}
                           required
                           disabled
-                        >
-                          <option value="Elektronik">Elektronik</option>
-                          <option value="Dokumen">Dokumen</option>
-                          <option value="Aksesoris">Aksesoris</option>
-                          <option value="Pakaian">Pakaian</option>
-                          <option value="Lainnya">Lainnya</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Waktu Kejadian</label>
-                        <input 
-                          type="datetime-local"
-                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all font-medium bg-white"
-                          value={editData.occurrence_time}
-                          onChange={e => this.setState({ editData: { ...editData, occurrence_time: e.target.value } })}
-                          required
-                          disabled
+                          
+                          options={[
+                            { label: "Elektronik", value: "Elektronik" },
+                            { label: "Dokumen", value: "Dokumen" },
+                            { label: "Aksesoris", value: "Aksesoris" },
+                            { label: "Pakaian", value: "Pakaian" },
+                            { label: "Lainnya", value: "Lainnya" }
+                          ]}
                         />
-                      </div>
-                    </div>
 
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Lokasi Kejadian</label>
-                      <input 
-                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                        placeholder="Misal: Perpustakaan LSI"
-                        value={editData.location}
-                        onChange={e => this.setState({ editData: { ...editData, location: e.target.value } })}
+                      <Input 
+                        label="Waktu Kejadian"
+                        type="datetime-local"
+                        value={editData.occurrence_time}
+                        onChange={e => this.setState({ editData: { ...editData, occurrence_time: e.target.value } })}
                         required
                         disabled
+                        
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Deskripsi</label>
-                      <textarea 
-                        className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 min-h-[160px] bg-white font-medium"
-                        placeholder="Jelaskan kondisi barang..."
-                        value={editData.description}
-                        onChange={e => this.setState({ editData: { ...editData, description: e.target.value } })}
-                        required
-                      />
-                    </div>
+                    <Input 
+                      label="Lokasi Kejadian"
+                      placeholder="Misal: Perpustakaan LSI"
+                      value={editData.location}
+                      onChange={e => this.setState({ editData: { ...editData, location: e.target.value } })}
+                      required
+                      disabled
+                      
+                    />
 
-                    <div className="grid grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Status</label>
-                        <select 
-                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
+                    <Textarea 
+                      label="Deskripsi"
+                      placeholder="Jelaskan kondisi barang..."
+                      value={editData.description}
+                      onChange={e => this.setState({ editData: { ...editData, description: e.target.value } })}
+                      required
+                      
+                    />
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <Select 
+                          label="Status"
                           value={editData.status}
                           onChange={e => this.setState({ editData: { ...editData, status: e.target.value } })}
                           required
-                        >
-                          <option value="Hilang">Hilang</option>
-                          <option value="Ditemukan">Ditemukan</option>
-                          <option value="Diproses">Diproses</option>
-                          <option value="Dikembalikan">Dikembalikan</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="text-sm font-bold text-gray-700 uppercase tracking-widest">Nama Penerima</label>
-                        <input 
-                          className="w-full px-6 py-5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                          placeholder="Tulis Nama Penerima"
-                          value={editData.receiver_name}
-                          onChange={e => this.setState({ editData: { ...editData, receiver_name: e.target.value } })}
-                          required={editData.status === 'Dikembalikan'}
+                          
+                          options={[
+                            { label: "Hilang", value: "Hilang" },
+                            { label: "Ditemukan", value: "Ditemukan" },
+                            { label: "Diproses", value: "Diproses" },
+                            { label: "Dikembalikan", value: "Dikembalikan" }
+                          ]}
                         />
-                      </div>
+
+                      <Input 
+                        label="Nama Penerima"
+                        placeholder="Tulis Nama Penerima"
+                        value={editData.receiver_name}
+                        onChange={e => this.setState({ editData: { ...editData, receiver_name: e.target.value } })}
+                        required={editData.status === 'Dikembalikan'}
+                        
+                      />
                     </div>
 
                     <div className="space-y-6">
-                      <label className="text-sm font-bold text-gray-700 uppercase tracking-widest block">Foto Barang</label>
+                      <label className="text-sm font-bold text-gray-700 tracking-wide block">Foto Barang</label>
                       <div className="flex gap-8 items-start">
                         <div className="flex-1">
                           <div className="relative group">
@@ -346,7 +335,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                           </div>
                         </div>
                         <div className="w-80 bg-blue-50/50 p-8 rounded-3xl border border-blue-100/50">
-                          <p className="text-[10px] font-black text-blue-900/40 uppercase tracking-widest mb-3">Panduan Foto</p>
+                          <p className="text-[10px] font-black text-blue-900/40 tracking-wide mb-3">Panduan Foto</p>
                           <p className="text-xs text-blue-900/60 font-medium italic leading-relaxed">
                             "Pastikan pencahayaan cukup dan foto memperlihatkan ciri khas benda untuk memudahkan proses verifikasi."
                           </p>
@@ -358,7 +347,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                       <button 
                         type="submit" 
                         disabled={updating}
-                        className="px-12 py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 transition-all flex items-center gap-3 disabled:opacity-50"
+                        className="px-12 py-5 bg-blue-600 text-white rounded-2xl font-black text-sm tracking-wide shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 transition-all flex items-center gap-3 disabled:opacity-50"
                       >
                         {updating && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                         {updating ? 'Sedang Menyimpan...' : 'Simpan Perubahan'}
@@ -377,7 +366,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
       <div className="flex min-h-screen bg-[#FDFDFD]">
         <Sidebar role="Petugas" />
         <main className="flex-1 p-12 overflow-y-auto">
-          <nav className="flex items-center gap-2 mb-8 text-[11px] font-black uppercase tracking-widest text-gray-400">
+          <nav className="flex items-center gap-2 mb-8 text-[11px] font-black tracking-wide text-gray-400">
             <span className="cursor-pointer hover:text-blue-600 transition-colors" onClick={() => navigate('/petugas/reports')}>Daftar Laporan</span>
             <span>&gt;</span>
             <span className="text-gray-900">Detail Laporan</span>
@@ -406,7 +395,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 gap-4">
                     <FiBriefcase size={64} className="opacity-20" />
-                    <p className="text-xs font-bold uppercase tracking-widest opacity-40">Belum ada foto</p>
+                    <p className="text-xs font-bold tracking-wide opacity-40">Belum ada foto</p>
                   </div>
                 )}
               </div>
@@ -423,12 +412,12 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                     </button>
                   </div>
                   <div className="flex gap-3">
-                    <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    <span className={`px-5 py-2 rounded-full text-[10px] font-black tracking-wide ${
                       report.type === 'Kehilangan' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
                     }`}>
                       {report.type}
                     </span>
-                    <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    <span className={`px-5 py-2 rounded-full text-[10px] font-black tracking-wide ${
                       report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
                       report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
                       report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-600'
@@ -440,17 +429,17 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
 
                 <div className="grid grid-cols-4 gap-12 py-10 border-y border-gray-50">
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kategori</p>
+                    <p className="text-[10px] font-black text-gray-400 tracking-wide">Kategori</p>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-blue-900/5 rounded-lg flex items-center justify-center text-blue-900/40">
                         <FiBriefcase size={14} />
                       </div>
-                      <span className="text-xs font-black text-blue-900 uppercase tracking-widest bg-blue-900/5 px-3 py-1.5 rounded-lg">{report.item.category}</span>
+                      <span className="text-xs font-black text-blue-900 tracking-wide bg-blue-900/5 px-3 py-1.5 rounded-lg">{report.item.category}</span>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tanggal Kejadian</p>
+                    <p className="text-[10px] font-black text-gray-400 tracking-wide">Tanggal Kejadian</p>
                     <div className="flex items-center gap-3">
                       <FiCalendar size={18} className="text-gray-900" />
                       <span className="text-sm font-bold text-gray-900">
@@ -462,7 +451,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lokasi</p>
+                    <p className="text-[10px] font-black text-gray-400 tracking-wide">Lokasi</p>
                     <div className="flex items-center gap-3">
                       <FiMapPin size={18} className="text-gray-900" />
                       <span className="text-sm font-bold text-gray-900 truncate">{report.location}</span>
@@ -470,7 +459,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Pelapor</p>
+                    <p className="text-[10px] font-black text-gray-400 tracking-wide">Nama Pelapor</p>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
                         <FiUser size={14} />
@@ -481,7 +470,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                 </div>
 
                 <div className="mt-12 space-y-6">
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Deskripsi</h3>
+                  <h3 className="text-[10px] font-black text-gray-400 tracking-wide">Deskripsi</h3>
                   <p className="text-gray-600 leading-relaxed text-sm font-medium whitespace-pre-wrap">
                     {report.description}
                   </p>
@@ -493,7 +482,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                       <FiUser size={24} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-emerald-900/40 uppercase tracking-widest">Telah Diterima Oleh</p>
+                      <p className="text-[10px] font-black text-emerald-900/40 tracking-wide">Telah Diterima Oleh</p>
                       <p className="text-xl font-black text-emerald-900">{report.receiver_name}</p>
                     </div>
                   </div>
@@ -502,7 +491,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                 <div className="mt-12 pt-12 border-t border-gray-50 flex justify-end">
                   <button 
                     onClick={this.handleDelete}
-                    className="px-10 py-4 bg-red-50 text-red-500 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all border border-red-100"
+                    className="px-10 py-4 bg-red-50 text-red-500 rounded-xl font-bold text-sm tracking-wide hover:bg-red-500 hover:text-white transition-all border border-red-100"
                   >
                     Batalkan Laporan
                   </button>

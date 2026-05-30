@@ -99,7 +99,7 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
         header: 'Status',
         render: (report) => (
           <div className="flex justify-center">
-            <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+            <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide ${
               report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
               report.type === 'Penemuan' ? 'bg-blue-50 text-blue-600' :
               'bg-red-50 text-red-600'
@@ -128,7 +128,7 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
                     <FiBox size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">Total Inventori</p>
+                    <p className="text-xs text-gray-400 tracking-wide">Total Inventori</p>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -145,7 +145,7 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
                     <FiActivity size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">24 Jam Terakhir</p>
+                    <p className="text-xs text-gray-400 tracking-wide">24 Jam Terakhir</p>
                   </div>
                 </div>
                 <div className="mt-8">

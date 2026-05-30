@@ -201,7 +201,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
                     <FiBox size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">Total Penyerahan</p>
+                    <p className="text-xs text-gray-400 tracking-wide">Total Penyerahan</p>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -218,7 +218,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
                     <FiCheckCircle size={28} />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-widest">Penyelesaian Hari Ini</p>
+                    <p className="text-xs text-gray-400 tracking-wide">Penyelesaian Hari Ini</p>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -241,7 +241,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
                     value={searchTerm}
                     onChange={this.handleSearch}
                     style={{ fontFamily: "'Roboto', sans-serif" }}
-                    className="pl-12 pr-6 py-3 bg-gray-50/50 border border-gray-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all text-sm font-medium w-80"
+                    className="pl-12 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-sm font-medium w-80"
                   />
                 </div>
                 <div className="relative">
@@ -297,7 +297,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
             />
 
             <div className="p-10 bg-white border-t border-gray-100 flex items-center justify-between">
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+              <p className="text-xs text-gray-400 font-bold tracking-wide">
                 Menampilkan {filteredHistory.length} dari {history.length} entri
               </p>
               <div className="flex items-center gap-2">

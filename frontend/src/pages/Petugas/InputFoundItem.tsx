@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
+import { Input } from '../../components/ui/Input';
+import { Textarea } from '../../components/ui/Textarea';
+import { Select } from '../../components/ui/Select';
+import { DatePicker } from '../../components/ui/DatePicker';
+import { id } from 'date-fns/locale';
 import api from '../../api/axios';
 import axios from 'axios';
 import { FiFileText, FiCamera, FiUploadCloud } from 'react-icons/fi';
@@ -42,7 +47,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
   handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      this.setState({ 
+      this.setState({
         selectedFile: file,
         previewUrl: URL.createObjectURL(file)
       });
@@ -61,7 +66,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       if (selectedFile) {
         const uploadFormData = new FormData();
         uploadFormData.append('file', selectedFile);
-        
+
         const uploadRes = await api.post('/upload/image', uploadFormData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -70,7 +75,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
 
       // Append finder name to description as backend doesn't have a specific field yet
       const combinedDescription = `Penemu: ${formData.finder_name}\n\n${formData.description}`;
-      
+
       const reportRes = await api.post('/petugas/laporan', {
         type: 'Penemuan',
         location: formData.location,
@@ -90,12 +95,12 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
 
       alert('Barang temuan berhasil diinput dan ditambahkan ke inventaris!');
       this.setState({
-        formData: { 
-          finder_name: '', 
-          item_name: '', 
-          category: '', 
+        formData: {
+          finder_name: '',
+          item_name: '',
+          category: '',
           occurrence_time: new Date().toISOString().slice(0, 16),
-          location: '', 
+          location: '',
           description: '',
           photo_url: ''
         },
@@ -136,109 +141,102 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   <h2 className="text-xl font-bold text-gray-900 tracking-tight">Detail Laporan</h2>
                 </div>
 
-                <div className="space-y-8">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Nama Penemu</label>
-                    <input 
-                      style={{ fontFamily: "'Roboto', sans-serif" }}
-                      className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                      placeholder="Tulis nama penemu di sini"
-                      value={formData.finder_name}
-                      onChange={e => this.setState({ formData: { ...formData, finder_name: e.target.value } })}
+                <div>
+                  <Input
+                    label="Nama Penemu"
+                    placeholder="Tulis nama penemu di sini"
+                    value={formData.finder_name}
+                    onChange={e => this.setState({ formData: { ...formData, finder_name: e.target.value } })}
+                    required
+
+                  />
+
+                  <Input
+                    label="Nama Barang"
+                    placeholder="Contoh: Tumbler Hydroflask Biru 32oz"
+                    value={formData.item_name}
+                    onChange={e => this.setState({ formData: { ...formData, item_name: e.target.value } })}
+                    required
+
+                  />
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <Select
+                      label="Kategori"
+                      className="w-full"
+                      placeholder="Pilih Kategori"
+                      value={formData.category}
+                      onChange={e => this.setState({ formData: { ...formData, category: e.target.value } })}
+                      required
+                      options={[
+                        { label: "Elektronik", value: "Elektronik" },
+                        { label: "Dokumen", value: "Dokumen" },
+                        { label: "Aksesoris", value: "Aksesoris" },
+                        { label: "Pakaian", value: "Pakaian" },
+                        { label: "Lainnya", value: "Lainnya" }
+                      ]}
+                    />
+
+                    <DatePicker
+                      label="Waktu Kejadian"
+                      selected={formData.occurrence_time ? new Date(formData.occurrence_time) : null}
+                      onChange={(date: any) => this.setState({ 
+                        formData: { 
+                          ...formData, 
+                          occurrence_time: date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '' 
+                        } 
+                      })}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={15}
+                      timeCaption="Jam"
+                      dateFormat="dd MMMM yyyy HH:mm"
+                      placeholderText="Pilih waktu kejadian..."
+                      locale={id}
                       required
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Nama Barang</label>
-                    <input 
-                      style={{ fontFamily: "'Roboto', sans-serif" }}
-                      className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                      placeholder="Contoh: Tumbler Hydroflask Biru 32oz"
-                      value={formData.item_name}
-                      onChange={e => this.setState({ formData: { ...formData, item_name: e.target.value } })}
-                      required
-                    />
-                  </div>
+                  <Input
+                    label="Lokasi Kejadian"
+                    placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
+                    value={formData.location}
+                    onChange={e => this.setState({ formData: { ...formData, location: e.target.value } })}
+                    required
+                    className="w-full"
+                  />
 
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Kategori</label>
-                      <select 
-                        style={{ fontFamily: "'Roboto', sans-serif" }}
-                        className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all bg-white font-medium appearance-none"
-                        value={formData.category}
-                        onChange={e => this.setState({ formData: { ...formData, category: e.target.value } })}
-                        required
-                      >
-                        <option value="" disabled>Pilih Kategori</option>
-                        <option value="Elektronik">Elektronik</option>
-                        <option value="Dokumen">Dokumen</option>
-                        <option value="Aksesoris">Aksesoris</option>
-                        <option value="Pakaian">Pakaian</option>
-                        <option value="Lainnya">Lainnya</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Waktu Kejadian</label>
-                      <input 
-                        type="datetime-local"
-                        style={{ fontFamily: "'Roboto', sans-serif" }}
-                        className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all font-medium bg-white"
-                        value={formData.occurrence_time}
-                        onChange={e => this.setState({ formData: { ...formData, occurrence_time: e.target.value } })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Lokasi Kejadian</label>
-                    <input 
-                      style={{ fontFamily: "'Roboto', sans-serif" }}
-                      className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 font-medium bg-white"
-                      placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
-                      value={formData.location}
-                      onChange={e => this.setState({ formData: { ...formData, location: e.target.value } })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Deskripsi</label>
-                    <textarea 
-                      style={{ fontFamily: "'Roboto', sans-serif" }}
-                      className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all placeholder:text-gray-400 min-h-[120px] bg-white font-medium"
-                      placeholder="Jelaskan kondisi barang, ciri khas, atau detail lainnya..."
-                      value={formData.description}
-                      onChange={e => this.setState({ formData: { ...formData, description: e.target.value } })}
-                      required
-                    />
-                  </div>
+                  <Textarea
+                    label="Deskripsi"
+                    placeholder="Jelaskan kondisi barang, ciri khas, atau detail lainnya..."
+                    value={formData.description}
+                    onChange={e => this.setState({ formData: { ...formData, description: e.target.value } })}
+                    required
+                    className="w-full"
+                  />
 
                   <div className="space-y-4">
-                    <label className="text-sm font-bold text-gray-700 block" style={{ fontFamily: "'Roboto', sans-serif" }}>Foto Barang</label>
-                    <div className="flex gap-6 items-start">
-                      <div className="flex-1 space-y-4">
+                    <label className="text-sm font-medium text-gray-700 block">Foto Barang (Opsional)</label>
+                    <div className="flex flex-col sm:flex-row gap-6 items-start">
+                      <div className="flex-1 space-y-4 w-full">
                         <div className="relative group">
-                          <input 
+                          <input
                             type="file"
                             accept="image/*"
                             onChange={this.handleFileChange}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                           />
-                          <div className={`h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${previewUrl ? 'border-blue-500 bg-blue-50/20' : 'border-gray-100 bg-gray-50/20 hover:border-blue-200'}`}>
+                          <div className={`h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${previewUrl ? 'border-blue-500 bg-blue-50/20' : 'border-gray-300 bg-gray-50/50 hover:border-blue-300'}`}>
                             {previewUrl ? (
                               <img src={previewUrl} alt="Preview" className="h-full w-full object-contain rounded-2xl p-2" />
                             ) : (
                               <>
-                                <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                                <div className="w-12 h-12 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
                                   <FiUploadCloud size={24} />
                                 </div>
-                                <div className="text-center">
-                                  <p className="text-[10px] font-bold text-gray-900 tracking-widest uppercase">Klik untuk upload foto</p>
-                                  <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest">PNG, JPG SAMPAI 10MB</p>
+                                <div className="text-center px-4">
+                                  <p className="text-sm font-bold text-gray-700 tracking-wide">Klik untuk upload foto</p>
+                                  <p className="text-xs text-gray-500 font-medium mt-1 tracking-wide">PNG, JPG maksimal 10MB</p>
                                 </div>
                               </>
                             )}
@@ -246,12 +244,12 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                         </div>
                       </div>
 
-                      <div className="w-64 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
-                        <div className="flex items-center gap-2 mb-2 text-blue-900/40">
-                          <FiCamera size={14} />
-                          <p className="text-[10px] font-bold uppercase tracking-widest">Panduan Foto</p>
+                      <div className="w-full sm:w-72 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
+                        <div className="flex items-center gap-2 mb-3 text-blue-900/50">
+                          <FiCamera size={16} />
+                          <p className="text-xs font-bold tracking-wide">Panduan Foto</p>
                         </div>
-                        <p className="text-[11px] text-blue-900/60 font-medium italic leading-relaxed">
+                        <p className="text-xs text-blue-900/70 font-medium italic leading-relaxed">
                           "Pastikan pencahayaan cukup dan foto memperlihatkan ciri khas benda untuk memudahkan proses verifikasi."
                         </p>
                       </div>
@@ -259,10 +257,10 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                   </div>
 
                   <div className="pt-6 flex justify-end">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={loading}
-                      className="px-10 py-4 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 transition-all disabled:opacity-50 flex items-center gap-2"
+                      className="px-8 py-3 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 transition-all disabled:opacity-60 flex items-center gap-2"
                     >
                       {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                       {loading ? 'Sedang Menyimpan...' : 'Simpan Laporan'}

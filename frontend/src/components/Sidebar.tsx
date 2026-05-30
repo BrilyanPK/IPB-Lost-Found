@@ -40,10 +40,7 @@ class SidebarComponent extends Component<SidebarProps> {
 
     const links = role === 'Petugas' ? petugasLinks : adminLinks;
 
-    // Use a default avatar if none provided
-    const avatarUrl = role === 'Admin' 
-      ? 'https://ui-avatars.com/api/?name=Admin&background=f3f4f6&color=374151' 
-      : 'https://ui-avatars.com/api/?name=Petugas&background=f3f4f6&color=374151';
+    
 
     return (
       <aside className="w-64 bg-white border-r border-gray-100 h-screen sticky top-0 flex flex-col z-50">
@@ -75,7 +72,6 @@ class SidebarComponent extends Component<SidebarProps> {
         <div className="p-4 mt-auto border-t border-gray-100">
           <ProfileDropdown 
             userName={role} 
-            avatarUrl={avatarUrl}
             onLogout={this.handleLogout}
             position="top"
           />

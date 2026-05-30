@@ -3,7 +3,9 @@ import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
+import { Textarea } from '../../components/ui/Textarea';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
 import api from '../../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiLock, FiUploadCloud, FiCamera } from 'react-icons/fi';
@@ -114,40 +116,36 @@ const LostReport = () => {
         ) : (
           <Card className="p-8">
             {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-6">
-                <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required />
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">Kategori</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all bg-white"
-                    required
-                  >
-                    <option value="" disabled>Pilih Kategori</option>
-                    <option value="Elektronik">Elektronik</option>
-                    <option value="Dokumen">Dokumen</option>
-                    <option value="Aksesoris">Aksesoris</option>
-                    <option value="Pakaian">Pakaian</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                </div>
-              </div>
-              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required />
-              
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">Deskripsi Detail</label>
-                <textarea 
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  className="px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-h-[120px]"
-                  placeholder="Deskripsikan barang secara detail (warna, isi, ciri khusus)..."
+                <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required  />
+                <Select
+                  label="Kategori"
+                  className="w-full"
+                  placeholder="Pilih Kategori"
+                  value={formData.category}
+                  onChange={handleChange as any}
                   required
+                  options={[
+                    { label: "Elektronik", value: "Elektronik" },
+                    { label: "Dokumen", value: "Dokumen" },
+                    { label: "Aksesoris", value: "Aksesoris" },
+                    { label: "Pakaian", value: "Pakaian" },
+                    { label: "Lainnya", value: "Lainnya" }
+                  ]}
                 />
               </div>
+              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required  />
+              
+              <Textarea 
+                label="Deskripsi Detail"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Deskripsikan barang secara detail (warna, isi, ciri khusus)..."
+                required
+                
+              />
 
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 block">Foto Barang (Opsional)</label>
@@ -169,8 +167,8 @@ const LostReport = () => {
                               <FiUploadCloud size={24} />
                             </div>
                             <div className="text-center px-4">
-                              <p className="text-[10px] font-bold text-gray-700 tracking-widest uppercase">Klik untuk upload foto</p>
-                              <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase tracking-widest">PNG, JPG SAMPAI 10MB</p>
+                              <p className="text-sm font-bold text-gray-700 tracking-wide">Klik untuk upload foto</p>
+                              <p className="text-xs text-gray-500 font-medium mt-1 tracking-wide">PNG, JPG maksimal 10MB</p>
                             </div>
                           </>
                         )}
@@ -178,12 +176,12 @@ const LostReport = () => {
                     </div>
                   </div>
 
-                  <div className="w-full sm:w-64 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
-                    <div className="flex items-center gap-2 mb-2 text-blue-900/40">
-                      <FiCamera size={14} />
-                      <p className="text-[10px] font-bold uppercase tracking-widest">Panduan Foto</p>
+                  <div className="w-full sm:w-72 bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
+                    <div className="flex items-center gap-2 mb-3 text-blue-900/50">
+                      <FiCamera size={16} />
+                      <p className="text-xs font-bold tracking-wide">Panduan Foto</p>
                     </div>
-                    <p className="text-[11px] text-blue-900/60 font-medium italic leading-relaxed">
+                    <p className="text-xs text-blue-900/70 font-medium italic leading-relaxed">
                       "Opsional: Tambahkan foto barang (jika ada foto lama) untuk memudahkan pencari mencocokkan barang temuan dengan laporan Anda."
                     </p>
                   </div>

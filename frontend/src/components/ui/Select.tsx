@@ -1,0 +1,133 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { FiChevronDown } from 'react-icons/fi';
+
+interface Option {
+  label: string;
+  value: string;
+}
+
+interface SelectProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: Option[];
+  disabled?: boolean;
+  className?: string;
+  placeholder?: string;
+  required?: boolean;
+  label?: string;
+  error?: string;
+}
+
+export const Select: React.FC<SelectProps> = ({ 
+  value, 
+  onChange, 
+  options, 
+  disabled = false, 
+  className = '',
+  placeholder = 'Pilih opsi...',
+  required = false,
+  label,
+  error
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (optionValue: string) => {
+    if (disabled) return;
+    // Simulate event to maintain compatibility with existing handlers
+    onChange({
+      target: { value: optionValue }
+    } as React.ChangeEvent<HTMLSelectElement>);
+    setIsOpen(false);
+  };
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className={`flex flex-col gap-1.5 mb-6 ${className}`}>
+      {label && (
+        <label className="text-sm font-medium text-gray-700 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <div className="relative w-full" ref={containerRef}>
+        {/* Hidden native select for form validation/accessibility if needed */}
+        <select 
+          value={value} 
+        onChange={onChange} 
+        className="hidden" 
+        required={required}
+        disabled={disabled}
+      >
+        <option value="">{placeholder}</option>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+
+      {/* Custom Trigger */}
+      <div 
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full px-4 py-2.5 rounded-xl border transition-all bg-white flex items-center justify-between cursor-pointer font-normal text-sm
+          ${disabled ? 'opacity-60 bg-gray-50 cursor-not-allowed border-gray-300' : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'}
+          ${isOpen ? 'ring-2 ring-primary/30 border-primary' : 'hover:border-gray-400'}
+        `}
+        style={{ fontFamily: "'Roboto', sans-serif" }}
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (!disabled) setIsOpen(!isOpen);
+          }
+        }}
+      >
+        <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <FiChevronDown 
+          className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          size={20} 
+        />
+      </div>
+
+      {/* Custom Dropdown Menu */}
+      {isOpen && !disabled && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-50 animate-in fade-in zoom-in-95 origin-top max-h-60 overflow-y-auto" style={{ fontFamily: "'Roboto', sans-serif" }}>
+          {options.map((opt, index) => (
+            <React.Fragment key={opt.value}>
+              <div 
+                onClick={() => handleSelect(opt.value)}
+                className={`px-4 py-2.5 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center justify-between
+                  ${value === opt.value ? 'bg-primary/10 text-primary' : 'text-gray-700 hover:bg-gray-50 hover:text-primary'}
+                `}
+              >
+                {opt.label}
+                {value === opt.value && (
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                )}
+              </div>
+              {/* Optional divider between items, except last one */}
+              {index < options.length - 1 && (
+                <div className="h-px bg-gray-50 my-0.5 mx-2"></div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+      </div>
+      {error && <span className="text-xs text-red-500">{error}</span>}
+    </div>
+  );
+};

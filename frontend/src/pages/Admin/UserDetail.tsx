@@ -3,6 +3,7 @@ import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
 import api from '../../api/axios';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
@@ -168,12 +169,13 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
             {isEditing ? (
               <Card className="p-8 border-none ring-1 ring-gray-100 shadow-xl bg-white rounded-2xl animate-in fade-in zoom-in duration-300">
                 <h2 className="text-2xl font-bold text-gray-900 mb-8 tracking-tight">Edit Informasi Pengguna</h2>
-                <form onSubmit={this.handleEditSubmit} className="space-y-6">
+                <form onSubmit={this.handleEditSubmit}>
                   <Input 
                     label="Nama Lengkap" 
                     value={formData.full_name}
                     onChange={e => this.setState({ formData: { ...formData, full_name: e.target.value } })}
                     required 
+                    
                   />
                   <Input 
                     label="Email Address" 
@@ -181,31 +183,31 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
                     value={formData.email}
                     onChange={e => this.setState({ formData: { ...formData, email: e.target.value } })}
                     required 
+                    
                   />
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Role</label>
-                    <select 
-                      className="w-full px-5 py-4 bg-gray-50 border-none ring-1 ring-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-bold text-gray-900"
-                      value={formData.role}
-                      onChange={e => this.setState({ formData: { ...formData, role: e.target.value } })}
-                    >
-                      <option value="Pencari">Pencari</option>
-                      <option value="Petugas">Petugas</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  </div>
+                  <Select 
+                    label="Role"
+                    className="w-full"
+                    value={formData.role}
+                    onChange={e => this.setState({ formData: { ...formData, role: e.target.value } })}
+                    options={[
+                      { label: "Pencari", value: "Pencari" },
+                      { label: "Petugas", value: "Petugas" },
+                      { label: "Admin", value: "Admin" }
+                    ]}
+                  />
                   <div className="flex gap-4 mt-10 pt-6 border-t border-gray-100">
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="flex-1 py-4 font-bold text-xs uppercase tracking-widest border-none ring-1 ring-gray-200 hover:bg-gray-50" 
+                      className="flex-1"
                       onClick={() => this.setState({ isEditing: false, formData: { full_name: user.full_name, email: user.email, role: user.role } })}
                     >
                       Batal
                     </Button>
                     <Button 
                       type="submit" 
-                      className="flex-1 py-4 font-bold text-xs uppercase tracking-widest bg-blue-600 shadow-lg shadow-blue-500/20 hover:bg-blue-700"
+                      className="flex-1"
                     >
                       Simpan Perubahan
                     </Button>
@@ -221,7 +223,7 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
                   <div>
                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{user.full_name}</h2>
                     <p className="text-gray-500 font-medium text-lg mt-1">{user.email}</p>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mt-3 ${roleBg}`}>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide mt-3 ${roleBg}`}>
                       <FiShield size={12} />
                       {user.role}
                     </div>
@@ -232,13 +234,13 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
                   <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Informasi Tambahan</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <p className="text-xs font-bold text-gray-400 tracking-wide mb-2 flex items-center gap-2">
                         <FiUser size={14} /> ID Pengguna
                       </p>
                       <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100 break-all">{user.id}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <p className="text-xs font-bold text-gray-400 tracking-wide mb-2 flex items-center gap-2">
                         <FiMail size={14} /> Alamat Email
                       </p>
                       <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100">{user.email}</p>
