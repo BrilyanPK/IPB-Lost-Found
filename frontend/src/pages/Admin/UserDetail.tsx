@@ -7,7 +7,8 @@ import { Select } from '../../components/ui/Select';
 import api from '../../api/axios';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
-import { FiArrowLeft, FiEdit2, FiTrash2, FiUser, FiMail, FiShield } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit2, FiTrash2, FiUser, FiMail, FiShield, FiCalendar, FiClock, FiActivity, FiSave, FiX } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 interface User {
   id: string;
@@ -78,10 +79,11 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
     if (confirm(`Apakah Anda yakin ingin menghapus pengguna ${user.full_name}?`)) {
       try {
         await api.delete(`/admin/users/${user.id}`);
+        toast.success('Pengguna berhasil dihapus.');
         this.props.navigate('/admin/users');
       } catch (err) {
         console.error(err);
-        alert('Gagal menghapus pengguna.');
+        toast.error('Gagal menghapus pengguna.');
       }
     }
   };
@@ -102,9 +104,10 @@ class UserDetailComponent extends Component<WithRouterProps, UserDetailState> {
           role: res.data.role
         }
       });
+      toast.success('Pengguna berhasil diperbarui.');
     } catch (err) {
       console.error(err);
-      alert('Gagal memperbarui pengguna.');
+      toast.error('Gagal memperbarui pengguna.');
     }
   };
 

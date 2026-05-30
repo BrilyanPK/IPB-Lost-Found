@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
+import { toast } from 'react-hot-toast';
 import api from '../../api/axios';
 import axios from 'axios';
 import { 
@@ -164,7 +165,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
         photo_url: uploadedPhotoUrl
       });
 
-      alert('Laporan berhasil diperbarui!');
+      toast.success('Laporan berhasil diperbarui!');
       this.setState({ isEditing: false, updating: false, selectedFile: null });
       this.fetchData();
     } catch (err: unknown) {
@@ -175,14 +176,14 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      alert('Error: ' + errorMessage);
-      this.setState({ updating: false });
+      toast.error('Error: ' + errorMessage);
+    } finally {this.setState({ updating: false });
     }
   };
 
   handleDelete = async () => {
     if (!window.confirm('Apakah Anda yakin ingin membatalkan laporan ini?')) return;
-    alert('Laporan berhasil dibatalkan.');
+    toast.success('Laporan berhasil dibatalkan.');
     this.props.navigate('/petugas/reports');
   };
 

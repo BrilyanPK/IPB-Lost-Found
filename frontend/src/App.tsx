@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Pencari/Home';
 import LostReport from './pages/Pencari/LostReport';
-import LostItems from './pages/Pencari/LostItems';
 import MyReports from './pages/Pencari/MyReports';
 
 import PetugasDashboard from './pages/Petugas/Dashboard';
@@ -20,38 +19,85 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+import { Toaster } from 'react-hot-toast';
+
+// Komponen untuk memproteksi rute berdasarkan role
+const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role')?.toLowerCase();
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles.length > 0 && role && !allowedRoles.map(r => r.toLowerCase()).includes(role)) {
+    // Jika role tidak sesuai, kembalikan ke halaman utama sesuai role
+    if (role === 'admin') return <Navigate to="/admin/dashboard" replace />;
+    if (role === 'petugas') return <Navigate to="/petugas/dashboard" replace />;
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
+        <Toaster 
+          position="top-center" 
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#333',
+              color: '#fff',
+              padding: '16px',
+              borderRadius: '12px',
+              fontWeight: 500,
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+            },
+            success: {
+              style: {
+                background: '#10B981',
+              },
+            },
+            error: {
+              style: {
+                background: '#EF4444',
+              },
+            },
+          }} 
+        />
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
           {/* Pencari Routes */}
           <Route path="/home" element={<Home />} />
           <Route path="/report-lost" element={<LostReport />} />
-          <Route path="/lost-items" element={<LostItems />} />
           <Route path="/my-reports" element={<MyReports />} />
           
           {/* Petugas Routes */}
-          <Route path="/petugas/dashboard" element={<PetugasDashboard />} />
-          <Route path="/petugas/input" element={<InputFoundItem />} />
-          <Route path="/petugas/reports" element={<ReportList />} />
-          <Route path="/petugas/reports/:id" element={<ReportDetail />} />
-          <Route path="/petugas/history" element={<HandoverHistory />} />
+          <Route path="/petugas/dashboard" element={<ProtectedRoute allowedRoles={['petugas']}><PetugasDashboard /></ProtectedRoute>} />
+          <Route path="/petugas/input" element={<ProtectedRoute allowedRoles={['petugas']}><InputFoundItem /></ProtectedRoute>} />
+          <Route path="/petugas/reports" element={<ProtectedRoute allowedRoles={['petugas']}><ReportList /></ProtectedRoute>} />
+          <Route path="/petugas/reports/:id" element={<ProtectedRoute allowedRoles={['petugas']}><ReportDetail /></ProtectedRoute>} />
+          <Route path="/petugas/history" element={<ProtectedRoute allowedRoles={['petugas']}><HandoverHistory /></ProtectedRoute>} />
 
           {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/users/create" element={<CreateUser />} />
-          <Route path="/admin/users/:id" element={<UserDetail />} />
-          <Route path="/admin/logs" element={<ActivityLog />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
+          <Route path="/admin/users/create" element={<ProtectedRoute allowedRoles={['admin']}><CreateUser /></ProtectedRoute>} />
+          <Route path="/admin/users/:id" element={<ProtectedRoute allowedRoles={['admin']}><UserDetail /></ProtectedRoute>} />
+          <Route path="/admin/logs" element={<ProtectedRoute allowedRoles={['admin']}><ActivityLog /></ProtectedRoute>} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
           {/* Shared Routes */}
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<ProtectedRoute allowedRoles={[]}><Profile /></ProtectedRoute>} />
+          
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </div>
     </BrowserRouter>

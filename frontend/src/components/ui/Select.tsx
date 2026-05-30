@@ -10,6 +10,7 @@ interface SelectProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: Option[];
+  name?: string;
   disabled?: boolean;
   className?: string;
   placeholder?: string;
@@ -22,6 +23,7 @@ export const Select: React.FC<SelectProps> = ({
   value, 
   onChange, 
   options, 
+  name,
   disabled = false, 
   className = '',
   placeholder = 'Pilih opsi...',
@@ -48,8 +50,8 @@ export const Select: React.FC<SelectProps> = ({
     if (disabled) return;
     // Simulate event to maintain compatibility with existing handlers
     onChange({
-      target: { value: optionValue }
-    } as React.ChangeEvent<HTMLSelectElement>);
+      target: { name, value: optionValue }
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
     setIsOpen(false);
   };
 
@@ -65,6 +67,7 @@ export const Select: React.FC<SelectProps> = ({
       <div className="relative w-full" ref={containerRef}>
         {/* Hidden native select for form validation/accessibility if needed */}
         <select 
+          name={name}
           value={value} 
         onChange={onChange} 
         className="hidden" 
@@ -81,8 +84,16 @@ export const Select: React.FC<SelectProps> = ({
       <div 
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`w-full px-4 py-2.5 rounded-xl border transition-all bg-white flex items-center justify-between cursor-pointer font-normal text-sm
-          ${disabled ? 'opacity-60 bg-gray-50 cursor-not-allowed border-gray-300' : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary'}
-          ${isOpen ? 'ring-2 ring-primary/30 border-primary' : 'hover:border-gray-400'}
+          ${disabled 
+            ? 'opacity-60 bg-gray-50 cursor-not-allowed border-gray-300' 
+            : error 
+              ? 'border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500' 
+              : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary hover:border-gray-400'
+          }
+          ${isOpen 
+            ? (error ? 'ring-2 ring-red-200 border-red-500' : 'ring-2 ring-primary/30 border-primary') 
+            : ''
+          }
         `}
         style={{ fontFamily: "'Roboto', sans-serif" }}
         tabIndex={disabled ? -1 : 0}
@@ -93,7 +104,7 @@ export const Select: React.FC<SelectProps> = ({
           }
         }}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
+        <span className={value ? 'text-gray-900' : 'text-gray-400'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <FiChevronDown 
@@ -104,19 +115,16 @@ export const Select: React.FC<SelectProps> = ({
 
       {/* Custom Dropdown Menu */}
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-50 animate-in fade-in zoom-in-95 origin-top max-h-60 overflow-y-auto" style={{ fontFamily: "'Roboto', sans-serif" }}>
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 origin-top max-h-60 overflow-y-auto custom-scrollbar" style={{ fontFamily: "'Roboto', sans-serif" }}>
           {options.map((opt, index) => (
             <React.Fragment key={opt.value}>
               <div 
                 onClick={() => handleSelect(opt.value)}
-                className={`px-4 py-2.5 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center justify-between
-                  ${value === opt.value ? 'bg-primary/10 text-primary' : 'text-gray-700 hover:bg-gray-50 hover:text-primary'}
+                className={`px-4 py-2.5 text-sm font-normal rounded-lg cursor-pointer transition-colors flex items-center justify-between
+                  ${value === opt.value ? 'bg-primary/5 text-primary font-medium' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}
                 `}
               >
                 {opt.label}
-                {value === opt.value && (
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                )}
               </div>
               {/* Optional divider between items, except last one */}
               {index < options.length - 1 && (

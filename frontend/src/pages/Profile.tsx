@@ -8,6 +8,7 @@ import { Footer } from '../components/Footer';
 import api from '../api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { FiUser, FiMail, FiShield, FiCalendar } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 interface User {
   id: string;
@@ -78,10 +79,7 @@ class Profile extends Component<Record<string, never>, ProfileState> {
 
   handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Since we don't have an endpoint for updating own profile yet,
-    // we would typically call api.put('/users/me', formData) or similar.
-    // Assuming such an endpoint exists or will exist:
-    alert("Fitur update profil belum didukung oleh backend untuk saat ini.");
+    toast.error("Fitur update profil belum didukung oleh backend untuk saat ini.");
     this.setState({ isEditing: false });
   };
 

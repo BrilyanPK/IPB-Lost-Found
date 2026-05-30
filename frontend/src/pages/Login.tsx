@@ -74,9 +74,11 @@ const Login = () => {
   return (
     <div className="flex-1 flex items-center justify-center p-4 bg-gray-50 min-h-screen">
       <Card className="w-full max-w-md p-8 shadow-lg border-t-4 border-t-primary">
-        <div className="text-center mb-8">
-          <img src="/assets/logo-balikin.png" alt="Balikin" className="h-20 mx-auto" />
-          <p className="text-sm text-gray-500 mt-2">Masuk ke akun Anda</p>
+        <div className="text-center mb-8 relative">
+          <Link to="/home" className="inline-block mt-4">
+            <img src="/assets/logo-balikin.png" alt="Balikin" className="h-16 mx-auto hover:opacity-90 transition-opacity" />
+          </Link>
+          <p className="text-sm text-gray-500 mt-3 font-medium">Masuk ke akun Anda</p>
         </div>
         
         {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}

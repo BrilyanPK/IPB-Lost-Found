@@ -33,7 +33,6 @@ class NavbarComponent extends Component<NavbarProps, NavbarState> {
     this.navLinks = [
       new NavItem('Beranda', '/home'),
       new NavItem('Buat Laporan', '/report-lost'),
-      new NavItem('Daftar Kehilangan', '/lost-items'),
       new NavItem('Laporanku', '/my-reports'),
     ];
 
@@ -77,8 +76,9 @@ class NavbarComponent extends Component<NavbarProps, NavbarState> {
 
   private handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     this.setState({ isLoggedIn: false, isMobileMenuOpen: false });
-    this.props.navigate('/login');
+    this.props.navigate('/home');
   };
 
   private toggleMenu = () => {

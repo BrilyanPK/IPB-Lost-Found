@@ -9,6 +9,7 @@ import { Select } from '../../components/ui/Select';
 import api from '../../api/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiLock, FiUploadCloud, FiCamera } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 const LostReport = () => {
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ const LostReport = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -36,10 +39,26 @@ const LostReport = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({...formData, [e.target.name]: e.target.value});
+    if (formErrors[e.target.name]) {
+      setFormErrors({...formErrors, [e.target.name]: ''});
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.name.trim()) errors.name = "Nama barang wajib diisi";
+    if (!formData.category) errors.category = "Kategori wajib dipilih";
+    if (!formData.location.trim()) errors.location = "Lokasi wajib diisi";
+    if (!formData.description.trim()) errors.description = "Deskripsi wajib diisi";
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    
     setLoading(true);
     setError('');
     
@@ -66,7 +85,7 @@ const LostReport = () => {
           photo_url: uploadedPhotoUrl || null
         }
       });
-      alert('Laporan berhasil dikirim!');
+      toast.success('Laporan berhasil dikirim!');
       navigate('/my-reports');
     } catch (err: unknown) {
       const error = err as {
@@ -78,7 +97,7 @@ const LostReport = () => {
         };
       };
       if (error.response?.status === 401) {
-        alert('Anda harus login terlebih dahulu!');
+        toast.error('Anda harus login terlebih dahulu!');
         navigate('/login');
       } else {
         setError(error.response?.data?.detail || 'Gagal mengirim laporan');
@@ -116,16 +135,18 @@ const LostReport = () => {
         ) : (
           <Card className="p-8">
             {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="grid md:grid-cols-2 gap-6">
-                <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required  />
+                <Input label="Nama Barang" name="name" value={formData.name} onChange={handleChange} placeholder="Misal: Dompet Hitam" required error={formErrors.name} />
                 <Select
                   label="Kategori"
+                  name="category"
                   className="w-full"
                   placeholder="Pilih Kategori"
                   value={formData.category}
                   onChange={handleChange as any}
                   required
+                  error={formErrors.category}
                   options={[
                     { label: "Elektronik", value: "Elektronik" },
                     { label: "Dokumen", value: "Dokumen" },
@@ -135,7 +156,7 @@ const LostReport = () => {
                   ]}
                 />
               </div>
-              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required  />
+              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required error={formErrors.location} />
               
               <Textarea 
                 label="Deskripsi Detail"
@@ -144,7 +165,7 @@ const LostReport = () => {
                 onChange={handleChange}
                 placeholder="Deskripsikan barang secara detail (warna, isi, ciri khusus)..."
                 required
-                
+                error={formErrors.description}
               />
 
               <div className="space-y-4">

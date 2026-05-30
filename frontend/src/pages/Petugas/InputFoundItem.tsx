@@ -9,6 +9,7 @@ import { id } from 'date-fns/locale';
 import api from '../../api/axios';
 import axios from 'axios';
 import { FiFileText, FiCamera, FiUploadCloud } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 interface InputState {
   formData: {
@@ -23,6 +24,7 @@ interface InputState {
   selectedFile: File | null;
   previewUrl: string | null;
   loading: boolean;
+  formErrors: Record<string, string>;
 }
 
 class InputFoundItem extends Component<Record<string, never>, InputState> {
@@ -40,7 +42,8 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       },
       selectedFile: null,
       previewUrl: null,
-      loading: false
+      loading: false,
+      formErrors: {}
     };
   }
 
@@ -54,8 +57,37 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
     }
   };
 
+  handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { formData, formErrors } = this.state;
+    this.setState({
+      formData: { ...formData, [e.target.name]: e.target.value }
+    });
+    
+    if (formErrors[e.target.name]) {
+      this.setState({
+        formErrors: { ...formErrors, [e.target.name]: '' }
+      });
+    }
+  };
+
+  validateForm = () => {
+    const { formData } = this.state;
+    const errors: Record<string, string> = {};
+    
+    if (!formData.finder_name.trim()) errors.finder_name = "Nama penemu wajib diisi";
+    if (!formData.item_name.trim()) errors.item_name = "Nama barang wajib diisi";
+    if (!formData.category) errors.category = "Kategori wajib dipilih";
+    if (!formData.location.trim()) errors.location = "Lokasi temuan wajib diisi";
+    if (!formData.description.trim()) errors.description = "Deskripsi wajib diisi";
+    if (!formData.occurrence_time) errors.occurrence_time = "Waktu kejadian wajib diisi";
+    
+    this.setState({ formErrors: errors });
+    return Object.keys(errors).length === 0;
+  };
+
   handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!this.validateForm()) return;
     this.setState({ loading: true });
     const { formData, selectedFile } = this.state;
 
@@ -93,7 +125,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
         quantity: 1
       });
 
-      alert('Barang temuan berhasil diinput dan ditambahkan ke inventaris!');
+      toast.success('Barang temuan berhasil diinput dan ditambahkan ke inventaris!');
       this.setState({
         formData: {
           finder_name: '',
@@ -116,7 +148,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      alert(`Error: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
       this.setState({ loading: false });
     }
   };
@@ -133,7 +165,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
             <p className="text-gray-400 mt-3 text-lg">Dokumentasikan barang temuan dengan detail untuk proses verifikasi.</p>
           </header>
 
-          <form onSubmit={this.handleSubmit} className="flex gap-8 max-w-6xl pb-20">
+          <form onSubmit={this.handleSubmit} noValidate className="flex gap-8 max-w-6xl pb-20">
             <div className="flex-1">
               <Card className="p-10 shadow-sm border-none ring-1 ring-gray-100">
                 <div className="flex items-center gap-3 mb-10">
@@ -144,30 +176,34 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                 <div>
                   <Input
                     label="Nama Penemu"
+                    name="finder_name"
                     placeholder="Tulis nama penemu di sini"
                     value={formData.finder_name}
-                    onChange={e => this.setState({ formData: { ...formData, finder_name: e.target.value } })}
+                    onChange={this.handleChange}
                     required
-
+                    error={this.state.formErrors.finder_name}
                   />
 
                   <Input
                     label="Nama Barang"
                     placeholder="Contoh: Tumbler Hydroflask Biru 32oz"
+                    name="item_name"
                     value={formData.item_name}
-                    onChange={e => this.setState({ formData: { ...formData, item_name: e.target.value } })}
+                    onChange={this.handleChange}
                     required
-
+                    error={this.state.formErrors.item_name}
                   />
 
                   <div className="grid grid-cols-2 gap-6">
                     <Select
                       label="Kategori"
+                      name="category"
                       className="w-full"
                       placeholder="Pilih Kategori"
                       value={formData.category}
-                      onChange={e => this.setState({ formData: { ...formData, category: e.target.value } })}
+                      onChange={this.handleChange}
                       required
+                      error={this.state.formErrors.category}
                       options={[
                         { label: "Elektronik", value: "Elektronik" },
                         { label: "Dokumen", value: "Dokumen" },
@@ -194,24 +230,29 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                       placeholderText="Pilih waktu kejadian..."
                       locale={id}
                       required
+                      error={this.state.formErrors.occurrence_time}
                     />
                   </div>
 
                   <Input
                     label="Lokasi Kejadian"
+                    name="location"
                     placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
                     value={formData.location}
-                    onChange={e => this.setState({ formData: { ...formData, location: e.target.value } })}
+                    onChange={this.handleChange}
                     required
+                    error={this.state.formErrors.location}
                     className="w-full"
                   />
 
                   <Textarea
-                    label="Deskripsi"
-                    placeholder="Jelaskan kondisi barang, ciri khas, atau detail lainnya..."
+                    label="Deskripsi Detail"
+                    name="description"
+                    placeholder="Deskripsikan barang temuan (warna, merk, ciri khusus, isi di dalamnya)..."
                     value={formData.description}
-                    onChange={e => this.setState({ formData: { ...formData, description: e.target.value } })}
+                    onChange={this.handleChange}
                     required
+                    error={this.state.formErrors.description}
                     className="w-full"
                   />
 

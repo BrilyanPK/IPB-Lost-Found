@@ -19,7 +19,8 @@ interface SidebarProps extends WithRouterProps {
 class SidebarComponent extends Component<SidebarProps> {
   handleLogout = () => {
     localStorage.removeItem('token');
-    this.props.navigate('/login');
+    localStorage.removeItem('role');
+    this.props.navigate('/home');
   };
 
   render() {

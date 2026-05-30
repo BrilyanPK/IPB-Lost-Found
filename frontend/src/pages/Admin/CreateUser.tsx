@@ -9,6 +9,8 @@ import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
 import { FiArrowLeft, FiUserPlus } from 'react-icons/fi';
 
+import { toast } from 'react-hot-toast';
+
 interface CreateUserState {
   formData: {
     full_name: string;
@@ -17,6 +19,7 @@ interface CreateUserState {
     role: string;
   };
   loading: boolean;
+  formErrors: Record<string, string>;
 }
 
 class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
@@ -29,12 +32,40 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
         password: '',
         role: 'Pencari'
       },
-      loading: false
+      loading: false,
+      formErrors: {}
     };
   }
 
+  handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { formData, formErrors } = this.state;
+    this.setState({
+      formData: { ...formData, [e.target.name]: e.target.value }
+    });
+    
+    if (formErrors[e.target.name]) {
+      this.setState({
+        formErrors: { ...formErrors, [e.target.name]: '' }
+      });
+    }
+  };
+
+  validateForm = () => {
+    const { formData } = this.state;
+    const errors: Record<string, string> = {};
+    
+    if (!formData.full_name.trim()) errors.full_name = "Nama lengkap wajib diisi";
+    if (!formData.email.trim()) errors.email = "Email wajib diisi";
+    if (!formData.password.trim()) errors.password = "Password wajib diisi";
+    if (!formData.role) errors.role = "Role wajib dipilih";
+    
+    this.setState({ formErrors: errors });
+    return Object.keys(errors).length === 0;
+  };
+
   handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!this.validateForm()) return;
     this.setState({ loading: true });
     
     try {
@@ -42,7 +73,7 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
       this.props.navigate('/admin/users');
     } catch (err: unknown) {
       console.error(err);
-      alert('Gagal membuat user. Pastikan email belum terdaftar.');
+      toast.error('Gagal membuat user. Pastikan email belum terdaftar.');
     } finally {
       this.setState({ loading: false });
     }
@@ -80,34 +111,39 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
               <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Personal Information</h2>
             </div>
 
-            <form onSubmit={this.handleSubmit}>
+            <form onSubmit={this.handleSubmit} noValidate>
               <div className="relative group">
                 <Input 
                   label="Full Name" 
+                  name="full_name"
                   value={formData.full_name}
-                  onChange={e => this.setState({ formData: { ...formData, full_name: e.target.value } })}
+                  onChange={this.handleChange}
                   required 
                   placeholder="e.g. Jonathan Doe"
                   className="w-full"
+                  error={this.state.formErrors.full_name}
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <Input 
                   label="Email Address" 
+                  name="email"
                   type="email" 
                   value={formData.email}
-                  onChange={e => this.setState({ formData: { ...formData, email: e.target.value } })}
+                  onChange={this.handleChange}
                   required 
                   placeholder="jonathan@university.edu"
-                  
+                  error={this.state.formErrors.email}
                 />
                   <Select 
                     label="Role"
+                    name="role"
                     className="w-full"
                     value={formData.role}
-                    onChange={e => this.setState({ formData: { ...formData, role: e.target.value } })}
+                    onChange={this.handleChange as any}
                     required
+                    error={this.state.formErrors.role}
                     options={[
                       { label: "Pencari", value: "Pencari" },
                       { label: "Petugas", value: "Petugas" },
@@ -119,12 +155,13 @@ class CreateUserComponent extends Component<WithRouterProps, CreateUserState> {
               <div className="max-w-md">
                 <Input 
                   label="Password" 
+                  name="password"
                   type="password" 
                   value={formData.password}
-                  onChange={e => this.setState({ formData: { ...formData, password: e.target.value } })}
+                  onChange={this.handleChange}
                   required 
                   placeholder="••••••••"
-                  
+                  error={this.state.formErrors.password}
                 />
               </div>
 

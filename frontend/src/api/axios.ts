@@ -12,5 +12,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+// Tambahkan interceptor untuk menangani response
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Jika token kedaluwarsa atau tidak valid, hapus token dan arahkan ke halaman login
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      // Hanya alihkan jika tidak sedang berada di halaman login atau register
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login?expired=true';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

@@ -51,7 +51,7 @@ def require_role(roles: list[RoleEnum]):
         if user_role_str not in role_values:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions",
+                detail="Akses ditolak: Akun Anda tidak memiliki izin untuk melakukan tindakan ini.",
             )
         return current_user
     return role_checker
