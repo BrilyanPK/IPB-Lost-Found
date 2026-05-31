@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import { Component, createRef } from 'react';
 import { FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi';
 import { withRouter } from '../utils/withRouter';
 import type { WithRouterProps } from '../utils/withRouter';

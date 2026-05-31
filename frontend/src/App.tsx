@@ -21,8 +21,10 @@ import Register from './pages/Register';
 
 import { Toaster } from 'react-hot-toast';
 
+import React from 'react';
+
 // Komponen untuk memproteksi rute berdasarkan role
-const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles: string[] }) => {
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role')?.toLowerCase();
 

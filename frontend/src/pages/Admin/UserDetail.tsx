@@ -7,7 +7,7 @@ import { Select } from '../../components/ui/Select';
 import api from '../../api/axios';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
-import { FiArrowLeft, FiEdit2, FiTrash2, FiUser, FiMail, FiShield, FiCalendar, FiClock, FiActivity, FiSave, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit2, FiTrash2, FiUser, FiMail, FiShield } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 interface User {

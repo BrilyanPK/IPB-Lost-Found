@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { useSort } from '../../hooks/useSort';
-import { FiLock, FiX, FiCheckCircle } from 'react-icons/fi';
+import { FiLock, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';

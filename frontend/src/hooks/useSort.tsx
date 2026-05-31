@@ -16,11 +16,11 @@ export function useSort<T>(data: T[]) {
 
     return [...data].sort((a, b) => {
       const keys = sortConfig.key.split('.');
-      let valA = a;
-      let valB = b;
+      let valA: any = a;
+      let valB: any = b;
       for (const k of keys) {
-        valA = valA?.[k as keyof typeof valA];
-        valB = valB?.[k as keyof typeof valB];
+        valA = valA?.[k];
+        valB = valB?.[k];
       }
 
       if (valA == null) return 1;

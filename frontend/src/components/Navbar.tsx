@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiMenu, FiX, FiUser, FiLogOut, FiChevronRight } from 'react-icons/fi';
+import { FiMenu, FiX } from 'react-icons/fi';
 import { jwtDecode } from 'jwt-decode';
 import { ProfileDropdown } from './ProfileDropdown';
 

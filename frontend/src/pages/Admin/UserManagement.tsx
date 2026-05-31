@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Table } from '../../components/ui/Table';
 import type { TableColumn } from '../../components/ui/Table';
 import api from '../../api/axios';
 import { withRouter } from '../../utils/withRouter';
 import type { WithRouterProps } from '../../utils/withRouter';
-import { FiUsers, FiShield, FiSearch, FiSliders, FiUserPlus, FiTrash2, FiUserCheck } from 'react-icons/fi';
+import { FiUsers, FiShield, FiSearch, FiSliders, FiUserCheck } from 'react-icons/fi';
 
 interface User {
   id: string;
@@ -82,10 +80,10 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
   handleSort = (key: string) => {
     this.setState(prevState => {
       if (prevState.sortKey === key) {
-        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc' };
-        if (prevState.sortDirection === 'asc') return { sortKey: null, sortDirection: null };
+        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc', sortKey: key };
+        if (prevState.sortDirection === 'asc') return { sortKey: null as string | null, sortDirection: null as 'asc' | 'desc' | null };
       }
-      return { sortKey: key, sortDirection: 'desc' };
+      return { sortKey: key, sortDirection: 'desc' as 'desc' };
     });
   };
 
@@ -343,8 +341,8 @@ class UserManagementComponent extends Component<WithRouterProps, UserManagementS
             data={currentUsers}
             loading={loading}
             topContent={topContent}
-            sortKey={sortKey}
-            sortDirection={sortDirection as 'asc' | 'desc' | undefined}
+            sortKey={sortKey || undefined}
+            sortDirection={sortDirection || undefined}
             onSort={this.handleSort}
             emptyMessage={searchTerm || filters.time.length > 0 || filters.role.length > 0 ? "Tidak ada user yang cocok dengan filter." : "Belum ada pengguna terdaftar."}
             pagination={{

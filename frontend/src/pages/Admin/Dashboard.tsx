@@ -4,7 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Table } from '../../components/ui/Table';
 import type { TableColumn } from '../../components/ui/Table';
 import api from '../../api/axios';
-import { FiActivity, FiCheckCircle, FiAlertTriangle, FiLogOut, FiSearch, FiLayers, FiSliders } from 'react-icons/fi';
+import { FiActivity, FiCheckCircle, FiAlertTriangle, FiLogOut, FiSearch, FiSliders } from 'react-icons/fi';
 
 interface LogItem {
   id: string;
@@ -108,10 +108,10 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
   handleSort = (key: string) => {
     this.setState(prevState => {
       if (prevState.sortKey === key) {
-        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc' };
-        if (prevState.sortDirection === 'asc') return { sortKey: null, sortDirection: null };
+        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc', sortKey: key };
+        if (prevState.sortDirection === 'asc') return { sortKey: null as string | null, sortDirection: null as 'asc' | 'desc' | null };
       }
-      return { sortKey: key, sortDirection: 'desc' };
+      return { sortKey: key, sortDirection: 'desc' as 'desc' };
     });
   };
 
@@ -459,8 +459,8 @@ class Dashboard extends Component<Record<string, never>, DashboardState> {
             loading={loadingLogs}
             topContent={topContent}
             onSort={this.handleSort}
-            sortKey={sortKey}
-            sortDirection={sortDirection as 'asc' | 'desc' | undefined}
+            sortKey={sortKey || undefined}
+            sortDirection={sortDirection || undefined}
             emptyMessage={searchTerm || filters.time.length > 0 || filters.activity.length > 0 || filters.status.length > 0 ? "Tidak ada log yang cocok dengan filter." : "Belum ada aktivitas tercatat."}
             pagination={{
               currentPage,

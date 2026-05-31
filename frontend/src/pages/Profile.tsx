@@ -7,7 +7,7 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import api from '../api/axios';
 import { jwtDecode } from 'jwt-decode';
-import { FiUser, FiMail, FiShield, FiCalendar } from 'react-icons/fi';
+import { FiUser } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 interface User {
@@ -97,7 +97,7 @@ class Profile extends Component<Record<string, never>, ProfileState> {
   };
 
   renderContent() {
-    const { user, loading, isEditing, formData, role } = this.state;
+    const { user, loading, isEditing, formData } = this.state;
 
     if (loading) {
       return (
