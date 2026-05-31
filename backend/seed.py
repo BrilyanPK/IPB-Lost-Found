@@ -20,7 +20,7 @@ def seed_db():
 
         admin = User(full_name="Administrator", email="admin@ipb.ac.id", hashed_password=admin_pass, role=RoleEnum.ADMIN)
         petugas = User(full_name="Petugas Keamanan", email="petugas@ipb.ac.id", hashed_password=petugas_pass, role=RoleEnum.PETUGAS)
-        pencari = User(full_name="Budi Mahasiswa", email="budi@apps.ipb.ac.id", hashed_password=pencari_pass, role=RoleEnum.PENCARI)
+        pencari = User(full_name="Budi Mahasiswa", email="budi@ipb.ac.id", hashed_password=pencari_pass, role=RoleEnum.PENCARI)
 
         db.add_all([admin, petugas, pencari])
         db.commit()
