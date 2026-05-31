@@ -10,7 +10,7 @@ class ReportBase(BaseModel):
     location: str
     description: str
     report_time: datetime | None = None
-    receiver_name: str | None = None
+    finder_id: str | None = None
 
 
 class ReportCreate(ReportBase):
@@ -24,14 +24,27 @@ class ReportResponse(ReportBase):
     report_time: datetime
     status: ReportStatusEnum
     created_at: datetime
+    finder_id: str | None = None
+    receiver_id: str | None = None
     item: ItemResponse
     user: UserResponse
+    finder: UserResponse | None = None
+    receiver: UserResponse | None = None
 
     model_config = {"from_attributes": True}
 
 
 class ReportUpdate(BaseModel):
     status: ReportStatusEnum | None = None
-    receiver_name: str | None = None
+    receiver_id: str | None = None
+    finder_id: str | None = None
     description: str | None = None
     photo_url: str | None = None
+
+
+class ReportEditByPencari(BaseModel):
+    location: str | None = None
+    description: str | None = None
+    report_time: datetime | None = None
+    item_name: str | None = None
+    item_category: str | None = None

@@ -39,7 +39,7 @@ class User(Base):
     role = Column(Enum(RoleEnum), default=RoleEnum.PENCARI)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    reports = relationship("Report", back_populates="user")
+    reports = relationship("Report", foreign_keys="[Report.user_id]", back_populates="user")
     activity_logs = relationship("ActivityLog", back_populates="user")
 
 
@@ -65,11 +65,14 @@ class Report(Base):
     report_time = Column(DateTime, default=datetime.utcnow)
     location = Column(String)
     description = Column(Text)
-    receiver_name = Column(String, nullable=True)
+    finder_id = Column(String(21), ForeignKey("users.id"), nullable=True)
+    receiver_id = Column(String(21), ForeignKey("users.id"), nullable=True)
     status = Column(Enum(ReportStatusEnum), default=ReportStatusEnum.HILANG)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    user = relationship("User", back_populates="reports")
+    user = relationship("User", foreign_keys=[user_id], back_populates="reports")
+    finder = relationship("User", foreign_keys=[finder_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
     item = relationship("Item", back_populates="reports")
 
 

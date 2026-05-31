@@ -79,8 +79,21 @@ class Profile extends Component<Record<string, never>, ProfileState> {
 
   handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.error("Fitur update profil belum didukung oleh backend untuk saat ini.");
-    this.setState({ isEditing: false });
+    try {
+      this.setState({ loading: true });
+      const res = await api.patch('/auth/me', this.state.formData);
+      this.setState({ 
+        user: res.data,
+        isEditing: false
+      });
+      toast.success("Profil berhasil diperbarui!");
+    } catch (err: unknown) {
+      console.error("Gagal update profil:", err);
+      const error = err as { response?: { data?: { detail?: string } } };
+      toast.error(error.response?.data?.detail || "Gagal memperbarui profil.");
+    } finally {
+      this.setState({ loading: false });
+    }
   };
 
   renderContent() {
@@ -107,16 +120,16 @@ class Profile extends Component<Record<string, never>, ProfileState> {
     if (user.role === 'Petugas') roleBg = 'bg-blue-50 text-blue-500';
 
     return (
-      <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
-        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex-1 p-12 overflow-y-auto max-w-5xl mx-auto w-full">
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 tracking-tighter">Profil Saya</h1>
-            <p className="text-gray-500 mt-2 text-base font-medium">Kelola informasi pribadi dan preferensi akun Anda</p>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tight">Profil Saya</h1>
+            <p className="text-gray-400 mt-3 text-lg">Kelola informasi pribadi dan preferensi akun Anda</p>
           </div>
           {!isEditing && (
             <Button 
               onClick={() => this.setState({ isEditing: true })}
-              className="px-6 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+              className="px-6 py-2.5"
             >
               Edit Profil
             </Button>
@@ -124,8 +137,10 @@ class Profile extends Component<Record<string, never>, ProfileState> {
         </header>
 
         {isEditing ? (
-          <Card className="p-8 border-none ring-1 ring-gray-100 shadow-xl bg-white rounded-2xl animate-in fade-in zoom-in duration-300">
-            <h2 className="text-2xl font-black text-gray-900 mb-8 tracking-tight">Edit Informasi Dasar</h2>
+          <Card className="p-10 shadow-sm border-none ring-1 ring-gray-100 bg-white animate-in fade-in zoom-in duration-300">
+            <div className="mb-10">
+              <h2 className="text-xl font-bold text-gray-900 tracking-tight">Edit Informasi</h2>
+            </div>
             <form onSubmit={this.handleEditSubmit} className="space-y-6">
               <Input 
                 label="Nama Lengkap" 
@@ -158,42 +173,37 @@ class Profile extends Component<Record<string, never>, ProfileState> {
             </form>
           </Card>
         ) : (
-          <div className="grid gap-6">
-            <Card className="p-8 border-none ring-1 ring-gray-100 shadow-sm bg-white rounded-2xl flex flex-col md:flex-row md:items-center gap-6">
+          <div className="grid gap-8">
+            <Card className="p-10 shadow-sm border-none ring-1 ring-gray-100 bg-white flex flex-col md:flex-row md:items-center gap-6">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 shrink-0">
                 <FiUser size={48} />
               </div>
               <div className="flex-1">
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight">{user.full_name}</h2>
+                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{user.full_name}</h2>
                 <p className="text-gray-500 font-medium text-lg mt-1">{user.email}</p>
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-wide mt-3 ${roleBg}`}>
-                  <FiShield size={12} />
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide mt-3 ${roleBg}`}>
                   {user.role}
                 </div>
               </div>
             </Card>
 
-            <Card className="p-8 border-none ring-1 ring-gray-100 shadow-sm bg-white rounded-2xl">
-              <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Informasi Akun</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="p-10 shadow-sm border-none ring-1 ring-gray-100 bg-white">
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 tracking-tight">Informasi Akun</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
                 <div>
-                  <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
-                    <FiUser size={14} /> ID Pengguna
-                  </p>
-                  <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100 break-all">{user.id}</p>
+                  <p className="text-sm text-gray-500 mb-1">ID Pengguna</p>
+                  <p className="font-medium text-gray-900 break-all">{user.id}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
-                    <FiMail size={14} /> Alamat Email Terdaftar
-                  </p>
-                  <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100">{user.email}</p>
+                  <p className="text-sm text-gray-500 mb-1">Alamat Email</p>
+                  <p className="font-medium text-gray-900">{user.email}</p>
                 </div>
                 {user.created_at && (
                   <div>
-                    <p className="text-xs font-black text-gray-400 tracking-wide mb-2 flex items-center gap-2">
-                      <FiCalendar size={14} /> Tanggal Bergabung
-                    </p>
-                    <p className="text-gray-900 font-bold bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Tanggal Bergabung</p>
+                    <p className="font-medium text-gray-900">
                       {new Date(user.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                   </div>
@@ -213,7 +223,7 @@ class Profile extends Component<Record<string, never>, ProfileState> {
     if (role === 'admin' || role === 'petugas') {
       const displayRole = role === 'admin' ? 'Admin' : 'Petugas';
       return (
-        <div className="flex min-h-screen bg-[#F8FAFC]">
+        <div className="flex min-h-screen bg-[#FDFDFD]">
           <Sidebar role={displayRole} />
           {this.renderContent()}
         </div>
@@ -222,9 +232,11 @@ class Profile extends Component<Record<string, never>, ProfileState> {
 
     // Pencari uses Navbar layout
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-[#FDFDFD]">
         <Navbar />
-        {this.renderContent()}
+        <main className="flex-1 flex justify-center w-full">
+          {this.renderContent()}
+        </main>
         <Footer />
       </div>
     );

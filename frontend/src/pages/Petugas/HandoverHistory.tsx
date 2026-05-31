@@ -11,7 +11,10 @@ interface HandoverItem {
   report_time: string;
   location: string;
   status: string;
-  receiver_name?: string;
+  receiver_id?: string;
+  receiver?: {
+    full_name: string;
+  };
   item: {
     name: string;
     category: string;
@@ -121,7 +124,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
       const matchSearch = 
         item.id.toLowerCase().includes(searchLower) ||
         item.item.name.toLowerCase().includes(searchLower) ||
-        (item.receiver_name && item.receiver_name.toLowerCase().includes(searchLower)) ||
+        (item.receiver?.full_name && item.receiver.full_name.toLowerCase().includes(searchLower)) ||
         item.user.full_name.toLowerCase().includes(searchLower);
 
       let matchTime = true;
@@ -173,9 +176,9 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
         )
       },
       { 
-        key: 'receiver_name', 
-        header: 'Penerima',
-        render: (item) => <span className="text-gray-900 font-medium">{item.receiver_name || '-'}</span>
+        key: 'receiver_id', 
+        header: 'Penerima', 
+        render: (item) => <span className="text-gray-900 font-medium">{item.receiver?.full_name || '-'}</span>
       },
       { 
         key: 'petugas', 

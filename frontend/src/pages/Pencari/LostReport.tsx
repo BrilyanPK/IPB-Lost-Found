@@ -110,8 +110,8 @@ const LostReport = () => {
   return (
     <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
       <Navbar />
-      <main className="flex-1 px-8 py-12 max-w-5xl mx-auto w-full">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Buat Laporan Kehilangan</h1>
+      <main className="flex-1 px-8 py-12 max-w-5xl mx-auto w-full min-h-[75vh]">
+        <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-12 text-center">Buat Laporan Kehilangan</h1>
 
         {!isLoggedIn ? (
           <Card className="p-10 flex flex-col items-center text-center">

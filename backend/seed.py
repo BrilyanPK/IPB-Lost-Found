@@ -54,6 +54,7 @@ def seed_db():
             item_id=found_item.id,
             location="Parkiran CCR",
             description="Ditemukan di dekat pohon beringin",
+            finder_id=petugas.id,
             status=ReportStatusEnum.DITEMUKAN
         )
         db.add(found_report)

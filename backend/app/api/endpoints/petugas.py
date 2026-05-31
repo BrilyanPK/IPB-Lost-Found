@@ -7,6 +7,8 @@ from app.schemas.inventory import InventoryCreate, InventoryResponse
 from app.services.report_service import ReportService
 from app.services.inventory_service import InventoryService
 from app.services.dashboard_service import DashboardService
+from app.schemas.user import UserResponse
+from app.models import User
 
 router = APIRouter()
 
@@ -83,3 +85,14 @@ def get_stats(session: SessionDep):
 )
 def get_inventory(session: SessionDep, skip: int = 0, limit: int = 100):
     return InventoryService.get_all(session, skip=skip, limit=limit)
+
+
+@router.get(
+    "/users",
+    response_model=List[UserResponse],
+    dependencies=[Depends(require_role([RoleEnum.PETUGAS, RoleEnum.ADMIN]))]
+)
+def get_users(session: SessionDep):
+    from sqlalchemy import select
+    users = session.execute(select(User)).scalars().all()
+    return users

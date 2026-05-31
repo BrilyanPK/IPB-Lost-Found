@@ -13,7 +13,7 @@ import { toast } from 'react-hot-toast';
 
 interface InputState {
   formData: {
-    finder_name: string;
+    finder_id: string;
     item_name: string;
     category: string;
     occurrence_time: string;
@@ -25,6 +25,7 @@ interface InputState {
   previewUrl: string | null;
   loading: boolean;
   formErrors: Record<string, string>;
+  users: {label: string, value: string}[];
 }
 
 class InputFoundItem extends Component<Record<string, never>, InputState> {
@@ -32,7 +33,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
     super(props);
     this.state = {
       formData: {
-        finder_name: '',
+        finder_id: '',
         item_name: '',
         category: '',
         occurrence_time: new Date().toISOString().slice(0, 16),
@@ -43,8 +44,22 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       selectedFile: null,
       previewUrl: null,
       loading: false,
-      formErrors: {}
+      formErrors: {},
+      users: []
     };
+  }
+
+  async componentDidMount() {
+    try {
+      const res = await api.get('/petugas/users');
+      const formattedUsers = res.data.map((u: any) => ({
+        label: `${u.full_name} (${u.role})`,
+        value: u.id
+      }));
+      this.setState({ users: formattedUsers });
+    } catch (err) {
+      console.error("Gagal mengambil data pengguna", err);
+    }
   }
 
   handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +89,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
     const { formData } = this.state;
     const errors: Record<string, string> = {};
     
-    if (!formData.finder_name.trim()) errors.finder_name = "Nama penemu wajib diisi";
+    if (!formData.finder_id) errors.finder_id = "Nama penemu wajib dipilih";
     if (!formData.item_name.trim()) errors.item_name = "Nama barang wajib diisi";
     if (!formData.category) errors.category = "Kategori wajib dipilih";
     if (!formData.location.trim()) errors.location = "Lokasi temuan wajib diisi";
@@ -105,14 +120,12 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
         uploadedPhotoUrl = uploadRes.data.url;
       }
 
-      // Append finder name to description as backend doesn't have a specific field yet
-      const combinedDescription = `Penemu: ${formData.finder_name}\n\n${formData.description}`;
-
       const reportRes = await api.post('/petugas/laporan', {
         type: 'Penemuan',
         location: formData.location,
-        description: combinedDescription,
+        description: formData.description,
         report_time: new Date(formData.occurrence_time).toISOString(),
+        finder_id: formData.finder_id,
         item: {
           name: formData.item_name,
           category: formData.category,
@@ -128,7 +141,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       toast.success('Barang temuan berhasil diinput dan ditambahkan ke inventaris!');
       this.setState({
         formData: {
-          finder_name: '',
+          finder_id: '',
           item_name: '',
           category: '',
           occurrence_time: new Date().toISOString().slice(0, 16),
@@ -174,14 +187,16 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                 </div>
 
                 <div>
-                  <Input
+                  <Select
                     label="Nama Penemu"
-                    name="finder_name"
-                    placeholder="Tulis nama penemu di sini"
-                    value={formData.finder_name}
+                    name="finder_id"
+                    placeholder="Pilih nama penemu..."
+                    value={formData.finder_id}
                     onChange={this.handleChange}
                     required
-                    error={this.state.formErrors.finder_name}
+                    error={this.state.formErrors.finder_id}
+                    options={this.state.users}
+                    className="w-full"
                   />
 
                   <Input

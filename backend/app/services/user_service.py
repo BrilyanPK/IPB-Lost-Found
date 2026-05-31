@@ -60,6 +60,23 @@ class UserService:
         return user
 
     @staticmethod
+    def update_me(db: Session, user_data: UserUpdate, current_user: User) -> User:
+        if user_data.email and user_data.email != current_user.email:
+            existing = db.query(User).filter(User.email == user_data.email).first()
+            if existing:
+                raise HTTPException(status_code=400, detail="Email already taken")
+            current_user.email = user_data.email
+            
+        if user_data.full_name:
+            current_user.full_name = user_data.full_name
+
+        db.commit()
+        db.refresh(current_user)
+
+        ActivityLogService.log(db, current_user.id, "UPDATE_PROFILE", f"User updated their profile")
+        return current_user
+
+    @staticmethod
     def create_by_admin(db: Session, user_data: UserCreate, admin_user: User) -> User:
         existing = db.query(User).filter(User.email == user_data.email).first()
         if existing:

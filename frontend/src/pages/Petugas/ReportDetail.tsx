@@ -28,7 +28,14 @@ interface ReportItem {
   location: string;
   description: string;
   status: string;
-  receiver_name?: string;
+  receiver_id?: string;
+  finder_id?: string;
+  receiver?: {
+    full_name: string;
+  };
+  finder?: {
+    full_name: string;
+  };
   item: {
     id: string;
     name: string;
@@ -36,6 +43,7 @@ interface ReportItem {
     photo_url?: string;
   };
   user: {
+    id: string;
     full_name: string;
   };
 }
@@ -45,18 +53,19 @@ interface ReportDetailState {
   loading: boolean;
   isEditing: boolean;
   editData: {
-    finder_name: string;
+    finder_id: string;
     item_name: string;
     category: string;
     occurrence_time: string;
     location: string;
     description: string;
     status: string;
-    receiver_name: string;
+    receiver_id: string;
   };
   selectedFile: File | null;
   previewUrl: string | null;
   updating: boolean;
+  users: {label: string, value: string}[];
 }
 
 class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState> {
@@ -67,18 +76,19 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
       loading: true,
       isEditing: false,
       editData: {
-        finder_name: '',
+        finder_id: '',
         item_name: '',
         category: '',
         occurrence_time: '',
         location: '',
         description: '',
         status: '',
-        receiver_name: ''
+        receiver_id: ''
       },
       selectedFile: null,
       previewUrl: null,
-      updating: false
+      updating: false,
+      users: []
     };
   }
 
@@ -89,30 +99,28 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
   fetchData = async () => {
     const { id } = this.props.params;
     try {
+      const usersRes = await api.get('/petugas/users');
+      const formattedUsers = usersRes.data.map((u: any) => ({
+        label: `${u.full_name} (${u.role})`,
+        value: u.id
+      }));
+      this.setState({ users: formattedUsers });
+
       const res = await api.get('/petugas/laporan');
       const report = res.data.find((r: ReportItem) => r.id === id);
       if (report) {
-        // Extract finder name from description if it was prepended earlier
-        let finder_name = '';
-        let description = report.description;
-        if (report.description.startsWith('Penemu: ')) {
-          const parts = report.description.split('\n\n');
-          finder_name = parts[0].replace('Penemu: ', '');
-          description = parts.slice(1).join('\n\n');
-        }
-
         this.setState({ 
           report, 
           loading: false,
           editData: {
-            finder_name,
+            finder_id: report.finder_id || '',
             item_name: report.item.name,
             category: report.item.category,
             occurrence_time: new Date(report.report_time).toISOString().slice(0, 16),
             location: report.location,
-            description,
+            description: report.description,
             status: report.status,
-            receiver_name: report.receiver_name || ''
+            receiver_id: report.receiver_id || (report.type === 'Kehilangan' ? report.user.id : '')
           },
           previewUrl: report.item.photo_url || null
         });
@@ -154,14 +162,10 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
         uploadedPhotoUrl = uploadRes.data.url;
       }
 
-      const combinedDescription = editData.finder_name 
-        ? `Penemu: ${editData.finder_name}\n\n${editData.description}` 
-        : editData.description;
-
       await api.patch(`/petugas/laporan/${report.id}/status`, {
         status: editData.status,
-        receiver_name: editData.receiver_name || null,
-        description: combinedDescription,
+        receiver_id: editData.receiver_id || null,
+        description: editData.description,
         photo_url: uploadedPhotoUrl
       });
 
@@ -222,12 +226,12 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </div>
 
                   <div>
-                    <Input 
+                    <Select 
                       label="Nama Penemu"
-                      placeholder="Tulis nama penemu"
-                      value={editData.finder_name}
-                      onChange={e => this.setState({ editData: { ...editData, finder_name: e.target.value } })}
-                      
+                      placeholder="Pilih nama penemu"
+                      value={editData.finder_id}
+                      onChange={e => this.setState({ editData: { ...editData, finder_id: e.target.value } })}
+                      options={this.state.users}
                     />
 
                     <Input 
@@ -302,13 +306,13 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                           ]}
                         />
 
-                      <Input 
+                      <Select 
                         label="Nama Penerima"
-                        placeholder="Tulis Nama Penerima"
-                        value={editData.receiver_name}
-                        onChange={e => this.setState({ editData: { ...editData, receiver_name: e.target.value } })}
+                        placeholder="Pilih Nama Penerima"
+                        value={editData.receiver_id}
+                        onChange={e => this.setState({ editData: { ...editData, receiver_id: e.target.value } })}
                         required={editData.status === 'Dikembalikan'}
-                        
+                        options={this.state.users}
                       />
                     </div>
 
@@ -477,14 +481,14 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </p>
                 </div>
 
-                {report.receiver_name && (
+                {report.receiver && (
                   <div className="mt-12 p-8 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center gap-6">
                     <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
                       <FiUser size={24} />
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-emerald-900/40 tracking-wide">Telah Diterima Oleh</p>
-                      <p className="text-xl font-black text-emerald-900">{report.receiver_name}</p>
+                      <p className="text-xl font-black text-emerald-900">{report.receiver.full_name}</p>
                     </div>
                   </div>
                 )}

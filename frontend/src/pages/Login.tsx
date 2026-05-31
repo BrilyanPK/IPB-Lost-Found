@@ -15,6 +15,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [formErrors, setFormErrors] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -22,6 +23,29 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
+    const errors = { email: '', password: '' };
+    let hasError = false;
+    
+    if (!email.trim()) {
+      errors.email = 'Email wajib diisi';
+      hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = 'Format email salah';
+      hasError = true;
+    }
+    
+    if (!password) {
+      errors.password = 'Password wajib diisi';
+      hasError = true;
+    }
+    
+    setFormErrors(errors);
+    if (hasError) {
+      setLoading(false);
+      return;
+    }
+    
     console.log('Attempting login for:', email);
     
     try {
@@ -42,6 +66,7 @@ const Login = () => {
       
       const role = (decoded.role || '').toLowerCase();
       console.log('Role identified:', role);
+      localStorage.setItem('role', role);
       
       if (role === 'pencari') {
         navigate('/home');
@@ -83,13 +108,14 @@ const Login = () => {
         
         {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg font-medium">{error}</div>}
         
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
           <Input 
             label="Email" 
             type="email" 
             placeholder="budi@apps.ipb.ac.id" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={formErrors.email}
             required
           />
           <Input 
@@ -98,6 +124,7 @@ const Login = () => {
             placeholder="••••••••" 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={formErrors.password}
             required
           />
           <Button className="w-full mt-4 py-3" type="submit" disabled={loading}>

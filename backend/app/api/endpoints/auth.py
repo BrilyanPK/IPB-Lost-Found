@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.api.deps import SessionDep, CurrentUser
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserResponse, Token, UserUpdate
 from app.services.user_service import UserService
 
 router = APIRouter()
@@ -26,3 +26,11 @@ def login(
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: CurrentUser):
     return current_user
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    user_data: UserUpdate, 
+    session: SessionDep, 
+    current_user: CurrentUser
+):
+    return UserService.update_me(session, user_data, current_user)

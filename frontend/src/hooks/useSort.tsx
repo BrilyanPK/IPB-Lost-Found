@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { FiChevronUp, FiChevronDown, FiMinus } from 'react-icons/fi';
 
 type SortDirection = 'asc' | 'desc' | null;
 
@@ -18,8 +19,8 @@ export function useSort<T>(data: T[]) {
       let valA = a;
       let valB = b;
       for (const k of keys) {
-        valA = valA?.[k];
-        valB = valB?.[k];
+        valA = valA?.[k as keyof typeof valA];
+        valB = valB?.[k as keyof typeof valB];
       }
 
       if (valA == null) return 1;
@@ -47,9 +48,13 @@ export function useSort<T>(data: T[]) {
   };
 
   const getSortIcon = (key: string) => {
-    if (sortConfig.key !== key) return ' ↕';
-    if (sortConfig.direction === 'asc') return ' ↑';
-    return ' ↓';
+    if (sortConfig.key !== key) {
+      return <FiMinus className="inline-block ml-1.5 opacity-30 w-3.5 h-3.5" />;
+    }
+    if (sortConfig.direction === 'asc') {
+      return <FiChevronUp className="inline-block ml-1.5 text-blue-600 w-4 h-4" />;
+    }
+    return <FiChevronDown className="inline-block ml-1.5 text-blue-600 w-4 h-4" />;
   };
 
   return { sortedData, requestSort, getSortIcon };
