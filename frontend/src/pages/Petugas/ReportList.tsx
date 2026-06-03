@@ -265,7 +265,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.completion_rate}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_completed_reports}</p>
                   <p className="text-sm text-gray-400 mt-2">Rasio Kesuksesan: {stats.completion_rate}%</p>
                 </div>
               </div>
