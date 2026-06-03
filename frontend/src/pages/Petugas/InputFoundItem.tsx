@@ -76,21 +76,13 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
 
   handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { formData, formErrors } = this.state;
-    let newValue = e.target.value;
+    const newValue = e.target.value;
     const updatedErrors = { ...formErrors };
 
-    // Only allow digits and leading '+' for contact field
     if (e.target.name === 'contact') {
-      const hasLetters = /[a-zA-Z]/.test(newValue);
-      newValue = newValue.replace(/[^0-9+]/g, '');
-      // Only allow '+' at the beginning
-      if (newValue.indexOf('+') > 0) {
-        newValue = newValue.replace(/\+/g, '');
-      }
-
-      if (hasLetters) {
+      if (/[a-zA-Z]/.test(newValue)) {
         updatedErrors.contact = 'Kontak hanya boleh berisi angka, huruf tidak diperbolehkan';
-      } else if (updatedErrors.contact) {
+      } else {
         updatedErrors.contact = '';
       }
     } else if (updatedErrors[e.target.name]) {
