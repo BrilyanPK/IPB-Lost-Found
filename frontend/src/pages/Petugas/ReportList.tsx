@@ -28,6 +28,7 @@ interface ReportListState {
   stats: {
     total_active: number;
     completion_rate: number;
+    total_completed_reports: number;
   };
   searchTerm: string;
   showFilterDropdown: boolean;
@@ -51,7 +52,8 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
       loading: true,
       stats: {
         total_active: 0,
-        completion_rate: 0
+        completion_rate: 0,
+        total_completed_reports: 0
       },
       searchTerm: '',
       showFilterDropdown: false,
@@ -78,7 +80,8 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
         reports: reportsRes.data, 
         stats: {
           total_active: activeReports.length,
-          completion_rate: reportsRes.data.length > 0 ? Math.round((completedReports.length / reportsRes.data.length) * 100) : 0
+          completion_rate: reportsRes.data.length > 0 ? Math.round((completedReports.length / reportsRes.data.length) * 100) : 0,
+          total_completed_reports: completedReports.length
         },
         loading: false 
       });
