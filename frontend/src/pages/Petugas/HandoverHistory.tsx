@@ -39,6 +39,10 @@ interface HandoverHistoryState {
   tempFilters: {
     time: string[];
   };
+  currentPage: number;
+  entriesPerPage: number;
+  sortKey: string | null;
+  sortDirection: 'asc' | 'desc' | null;
 }
 
 class HandoverHistory extends Component<Record<string, never>, HandoverHistoryState> {
@@ -54,7 +58,11 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
       searchTerm: '',
       showFilterDropdown: false,
       filters: { time: [] },
-      tempFilters: { time: [] }
+      tempFilters: { time: [] },
+      currentPage: 1,
+      entriesPerPage: 5,
+      sortKey: null,
+      sortDirection: null
     };
   }
 
@@ -83,7 +91,21 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
   };
 
   handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchTerm: e.target.value });
+    this.setState({ searchTerm: e.target.value, currentPage: 1 });
+  };
+
+  handlePageChange = (page: number) => {
+    this.setState({ currentPage: page });
+  };
+
+  handleSort = (key: string) => {
+    this.setState(prevState => {
+      if (prevState.sortKey === key) {
+        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc', sortKey: key };
+        if (prevState.sortDirection === 'asc') return { sortKey: null as string | null, sortDirection: null as 'asc' | 'desc' | null };
+      }
+      return { sortKey: key, sortDirection: 'desc' as 'desc' };
+    });
   };
 
   toggleFilterDropdown = () => {
@@ -112,12 +134,13 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
   applyFilters = () => {
     this.setState(prevState => ({
       filters: { ...prevState.tempFilters },
-      showFilterDropdown: false
+      showFilterDropdown: false,
+      currentPage: 1
     }));
   };
 
   render() {
-    const { history, loading, stats, searchTerm, showFilterDropdown, filters, tempFilters } = this.state;
+    const { history, loading, stats, searchTerm, showFilterDropdown, filters, tempFilters, currentPage, entriesPerPage, sortKey, sortDirection } = this.state;
 
     const filteredHistory = history.filter(item => {
       const searchLower = searchTerm.toLowerCase();
@@ -152,20 +175,48 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
       return matchSearch && matchTime;
     });
 
+    const sortedHistory = [...filteredHistory].sort((a, b) => {
+      if (!sortKey) return 0;
+      let valA: any = a[sortKey as keyof HandoverItem];
+      let valB: any = b[sortKey as keyof HandoverItem];
+      
+      if (sortKey === 'item') {
+        valA = a.item.name;
+        valB = b.item.name;
+      } else if (sortKey === 'receiver_id') {
+        valA = a.receiver?.full_name || '';
+        valB = b.receiver?.full_name || '';
+      } else if (sortKey === 'petugas') {
+        valA = a.user.full_name;
+        valB = b.user.full_name;
+      }
+      
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const indexOfLast = currentPage * entriesPerPage;
+    const indexOfFirst = indexOfLast - entriesPerPage;
+    const currentHistory = sortedHistory.slice(indexOfFirst, indexOfLast);
+
     const columns: TableColumn<HandoverItem>[] = [
       { 
         key: 'id', 
         header: 'ID Laporan',
+        sortable: true,
         render: (item) => <span className="text-blue-600 font-bold">#{item.id.substring(0, 8).toUpperCase()}</span>
       },
       { 
         key: 'item', 
         header: 'Nama Barang',
+        sortable: true,
         render: (item) => <span className="font-semibold text-gray-800">{item.item.name}</span>
       },
       { 
         key: 'report_time', 
         header: 'Tanggal Selesai',
+        sortable: true,
         render: (item) => (
           <span className="text-gray-500 font-medium">
             {new Date(item.report_time).toLocaleString('en-US', { 
@@ -178,11 +229,13 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
       { 
         key: 'receiver_id', 
         header: 'Penerima', 
+        sortable: true,
         render: (item) => <span className="text-gray-900 font-medium">{item.receiver?.full_name || '-'}</span>
       },
       { 
         key: 'petugas', 
         header: 'Petugas',
+        sortable: true,
         render: (item) => <span className="text-gray-900 font-medium">{item.user.full_name}</span>
       }
     ];
@@ -294,36 +347,20 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
 
             <Table 
               columns={columns} 
-              data={filteredHistory} 
+              data={currentHistory} 
               loading={loading}
               emptyMessage="Belum ada riwayat penyerahan."
+              sortKey={sortKey || undefined}
+              sortDirection={sortDirection || undefined}
+              onSort={this.handleSort}
+              pagination={{
+                currentPage,
+                totalPages: Math.ceil(filteredHistory.length / entriesPerPage),
+                totalEntries: filteredHistory.length,
+                entriesPerPage,
+                onPageChange: this.handlePageChange
+              }}
             />
-
-            <div className="p-10 bg-white border-t border-gray-100 flex items-center justify-between">
-              <p className="text-xs text-gray-400 font-bold tracking-wide">
-                Menampilkan {filteredHistory.length} dari {history.length} entri
-              </p>
-              <div className="flex items-center gap-2">
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900">
-                  &lt;
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20">
-                  1
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  2
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  3
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  4
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900">
-                  &gt;
-                </button>
-              </div>
-            </div>
           </Card>
         </main>
       </div>
