@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models import Report, Item, User, ReportStatusEnum, ReportTypeEnum
+from app.models import Report, Item, User, ReportStatusEnum, RoleEnum
 from app.schemas.report import ReportCreate, ReportUpdate, ReportEditByPencari
 from app.services.activity_log_service import ActivityLogService
 
@@ -18,9 +18,9 @@ class ReportService:
         db.commit()
         db.refresh(db_item)
 
-        initial_status = ReportStatusEnum.DITEMUKAN if report_data.type == ReportTypeEnum.PENEMUAN else ReportStatusEnum.HILANG
+        initial_status = ReportStatusEnum.HILANG if user.role == RoleEnum.PENCARI else ReportStatusEnum.DITEMUKAN
         db_report = Report(
-            type=report_data.type,
+            contact_info=report_data.contact_info,
             user_id=user.id,
             item_id=db_item.id,
             location=report_data.location,
@@ -33,12 +33,12 @@ class ReportService:
         db.commit()
         db.refresh(db_report)
 
-        ActivityLogService.log(db, user.id, "CREATE_REPORT", f"Created report #{db_report.id} ({db_report.type}) for {db_item.name}")
+        ActivityLogService.log(db, user.id, "CREATE_REPORT", f"Created report #{db_report.id} for {db_item.name}")
         return db_report
 
     @staticmethod
     def get_all(db: Session, skip: int = 0, limit: int = 100) -> list:
-        return db.query(Report).offset(skip).limit(limit).all()
+        return db.query(Report).order_by(Report.created_at.desc()).offset(skip).limit(limit).all()
 
     @staticmethod
     def get_by_user(db: Session, user_id: str) -> list:
@@ -106,7 +106,7 @@ class ReportService:
         if not db_report:
             raise HTTPException(status_code=404, detail="Report not found")
             
-        if db_report.user_id != user.id:
+        if db_report.user_id != user.id and user.role not in [RoleEnum.PETUGAS, RoleEnum.ADMIN]:
             raise HTTPException(status_code=403, detail="Not authorized to delete this report")
 
         # Capture item_id before deleting report

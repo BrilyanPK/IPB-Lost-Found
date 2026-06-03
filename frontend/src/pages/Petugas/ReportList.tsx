@@ -10,9 +10,6 @@ import { FiFileText, FiCheckCircle, FiSearch, FiSliders } from 'react-icons/fi';
 
 interface ReportItem {
   id: string;
-  type: string;
-  report_time: string;
-  location: string;
   status: string;
   item: {
     name: string;
@@ -34,12 +31,14 @@ interface ReportListState {
   showFilterDropdown: boolean;
   filters: {
     status: string[];
-    type: string[];
   };
   tempFilters: {
     status: string[];
-    type: string[];
   };
+  currentPage: number;
+  entriesPerPage: number;
+  sortKey: string | null;
+  sortDirection: 'asc' | 'desc' | null;
 }
 
 class ReportListComponent extends Component<WithRouterProps, ReportListState> {
@@ -54,8 +53,12 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
       },
       searchTerm: '',
       showFilterDropdown: false,
-      filters: { status: [], type: [] },
-      tempFilters: { status: [], type: [] }
+      filters: { status: [] },
+      tempFilters: { status: [] },
+      currentPage: 1,
+      entriesPerPage: 5,
+      sortKey: null,
+      sortDirection: null
     };
   }
 
@@ -84,7 +87,21 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
   };
 
   handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchTerm: e.target.value });
+    this.setState({ searchTerm: e.target.value, currentPage: 1 });
+  };
+
+  handlePageChange = (page: number) => {
+    this.setState({ currentPage: page });
+  };
+
+  handleSort = (key: string) => {
+    this.setState(prevState => {
+      if (prevState.sortKey === key) {
+        if (prevState.sortDirection === 'desc') return { sortDirection: 'asc', sortKey: key };
+        if (prevState.sortDirection === 'asc') return { sortKey: null as string | null, sortDirection: null as 'asc' | 'desc' | null };
+      }
+      return { sortKey: key, sortDirection: 'desc' as 'desc' };
+    });
   };
 
   toggleFilterDropdown = () => {
@@ -94,7 +111,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
     }));
   };
 
-  handleCheckboxChange = (category: 'status' | 'type', value: string, checked: boolean) => {
+  handleCheckboxChange = (category: 'status', value: string, checked: boolean) => {
     this.setState(prevState => {
       const currentList = prevState.tempFilters[category];
       const newList = checked 
@@ -113,12 +130,13 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
   applyFilters = () => {
     this.setState(prevState => ({
       filters: { ...prevState.tempFilters },
-      showFilterDropdown: false
+      showFilterDropdown: false,
+      currentPage: 1
     }));
   };
 
   render() {
-    const { reports, loading, stats, searchTerm, showFilterDropdown, filters, tempFilters } = this.state;
+    const { reports, loading, stats, searchTerm, showFilterDropdown, filters, tempFilters, currentPage, entriesPerPage, sortKey, sortDirection } = this.state;
     const { navigate } = this.props;
 
     const filteredReports = reports.filter(report => {
@@ -129,15 +147,34 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
         report.location.toLowerCase().includes(searchLower);
 
       const matchStatus = filters.status.length === 0 || filters.status.includes(report.status);
-      const matchType = filters.type.length === 0 || filters.type.includes(report.type);
 
-      return matchSearch && matchStatus && matchType;
+      return matchSearch && matchStatus;
     });
+
+    const sortedReports = [...filteredReports].sort((a, b) => {
+      if (!sortKey) return 0;
+      let valA: any = a[sortKey as keyof ReportItem];
+      let valB: any = b[sortKey as keyof ReportItem];
+      
+      if (sortKey === 'item') {
+        valA = a.item.name;
+        valB = b.item.name;
+      }
+      
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const indexOfLast = currentPage * entriesPerPage;
+    const indexOfFirst = indexOfLast - entriesPerPage;
+    const currentReports = sortedReports.slice(indexOfFirst, indexOfLast);
 
     const columns: TableColumn<ReportItem>[] = [
       { 
         key: 'id', 
         header: 'ID Laporan',
+        sortable: true,
         render: (report) => (
           <button 
             onClick={() => navigate(`/petugas/reports/${report.id}`)}
@@ -150,12 +187,14 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
       { 
         key: 'item', 
         header: 'Nama Barang',
+        sortable: true,
         render: (report) => <span className="font-semibold text-gray-800">{report.item.name}</span>
       },
-      { key: 'location', header: 'Lokasi Temuan' },
+      { key: 'location', header: 'Lokasi Temuan', sortable: true },
       { 
         key: 'report_time', 
         header: 'Waktu',
+        sortable: true,
         render: (report) => (
           <span className="text-gray-500 font-medium">
             {new Date(report.report_time).toLocaleString('en-US', { 
@@ -168,14 +207,15 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
       { 
         key: 'status', 
         header: 'Status',
+        sortable: true,
         render: (report) => (
           <div className="flex justify-center">
             <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide ${
               report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
-              report.type === 'Penemuan' ? 'bg-blue-50 text-blue-600' :
-              'bg-red-50 text-red-600'
+              report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
+              report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
             }`}>
-              {report.status === 'Dikembalikan' ? 'Dikembalikan' : report.type}
+              {report.status}
             </span>
           </div>
         )
@@ -203,7 +243,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_active.toString().padStart(3, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_active}</p>
                   <p className="text-sm text-gray-400 mt-2">+12% Minggu Ini</p>
                 </div>
               </div>
@@ -220,7 +260,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.completion_rate.toString().padStart(2, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.completion_rate}</p>
                   <p className="text-sm text-gray-400 mt-2">Rasio Kesuksesan: {stats.completion_rate}%</p>
                 </div>
               </div>
@@ -248,7 +288,7 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                     className={`p-3 border rounded-xl transition-colors flex items-center justify-center ${showFilterDropdown ? 'bg-gray-100 border-gray-300 text-gray-800' : 'bg-gray-50/50 border-gray-100 text-gray-400 hover:text-gray-900'}`}
                   >
                     <FiSliders size={20} />
-                    {(filters.status.length > 0 || filters.type.length > 0) && (
+                    {filters.status.length > 0 && (
                       <span className="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white translate-x-1/3 -translate-y-1/3"></span>
                     )}
                   </button>
@@ -257,26 +297,9 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
                       <h3 className="text-sm font-bold text-gray-900 mb-4 flex-none">Filter Laporan</h3>
                       <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
                         <div>
-                          <label className="block text-xs font-bold text-gray-700 mb-2">Tipe Laporan</label>
-                          <div className="space-y-2">
-                            {['Kehilangan', 'Penemuan'].map(opt => (
-                              <label key={opt} className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                                <input 
-                                  type="checkbox" 
-                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-                                  checked={tempFilters.type.includes(opt)}
-                                  onChange={(e) => this.handleCheckboxChange('type', opt, e.target.checked)}
-                                />
-                                {opt}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="w-full h-px bg-gray-100"></div>
-                        <div>
                           <label className="block text-xs font-bold text-gray-700 mb-2">Status</label>
                           <div className="space-y-2 mb-2">
-                            {['Diproses', 'Ditemukan', 'Dikembalikan'].map(opt => (
+                            {['Hilang', 'Diproses', 'Ditemukan', 'Dikembalikan'].map(opt => (
                               <label key={opt} className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                                 <input 
                                   type="checkbox" 
@@ -306,36 +329,20 @@ class ReportListComponent extends Component<WithRouterProps, ReportListState> {
             
             <Table 
               columns={columns} 
-              data={filteredReports} 
+              data={currentReports} 
               loading={loading}
               emptyMessage="Belum ada laporan yang ditemukan."
+              sortKey={sortKey || undefined}
+              sortDirection={sortDirection || undefined}
+              onSort={this.handleSort}
+              pagination={{
+                currentPage,
+                totalPages: Math.ceil(filteredReports.length / entriesPerPage),
+                totalEntries: filteredReports.length,
+                entriesPerPage,
+                onPageChange: this.handlePageChange
+              }}
             />
-
-            <div className="p-10 bg-white border-t border-gray-100 flex items-center justify-between">
-              <p className="text-xs text-gray-400 font-bold tracking-wide">
-                Menampilkan {filteredReports.length} dari {reports.length} entri
-              </p>
-              <div className="flex items-center gap-2">
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900">
-                  &lt;
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20">
-                  1
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  2
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  3
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900 font-bold">
-                  4
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-900">
-                  &gt;
-                </button>
-              </div>
-            </div>
           </Card>
         </main>
       </div>

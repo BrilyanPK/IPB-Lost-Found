@@ -1,7 +1,7 @@
 import os
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, engine, Base
-from app.models import User, RoleEnum, Item, Report, ReportTypeEnum, ReportStatusEnum, Inventory
+from app.models import User, RoleEnum, Item, Report, ReportStatusEnum, Inventory
 from app.core.security import get_password_hash
 
 def seed_db():
@@ -33,12 +33,12 @@ def seed_db():
 
         # Seed Report
         report = Report(
-            type=ReportTypeEnum.KEHILANGAN,
             user_id=pencari.id,
             item_id=item.id,
             location="Kantin GKA",
             description="Dompet panjang warna hitam isi KTP dan KTM",
-            status=ReportStatusEnum.HILANG
+            status=ReportStatusEnum.HILANG,
+            contact_info="081234567890"
         )
         db.add(report)
         db.commit()
@@ -49,13 +49,13 @@ def seed_db():
         db.commit()
 
         found_report = Report(
-            type=ReportTypeEnum.PENEMUAN,
             user_id=petugas.id,
             item_id=found_item.id,
             location="Parkiran CCR",
             description="Ditemukan di dekat pohon beringin",
             finder_id=petugas.id,
-            status=ReportStatusEnum.DITEMUKAN
+            status=ReportStatusEnum.DITEMUKAN,
+            contact_info="Pos Satpam Depan"
         )
         db.add(found_report)
         db.commit()

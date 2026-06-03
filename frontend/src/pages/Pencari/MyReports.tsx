@@ -18,8 +18,9 @@ interface UserReport {
   location: string;
   description: string;
   report_time: string;
-  finder_id?: number | null;
-  user_id?: number | null;
+  finder_id?: string | null;
+  user_id?: string | null;
+  contact_info?: string;
   item: {
     name: string;
     photo_url?: string;
@@ -42,7 +43,8 @@ const MyReports = () => {
     item_name: '',
     item_category: '',
     location: '',
-    description: ''
+    description: '',
+    contact_info: ''
   });
   const { sortedData, requestSort, getSortIcon } = useSort(reports);
 
@@ -52,7 +54,8 @@ const MyReports = () => {
         item_name: selectedReport.item.name,
         item_category: selectedReport.item.category || '',
         location: selectedReport.location,
-        description: selectedReport.description
+        description: selectedReport.description,
+        contact_info: selectedReport.contact_info || ''
       });
       setIsEditing(false);
       setShowCancelConfirm(false);
@@ -104,12 +107,14 @@ const MyReports = () => {
         ...r,
         location: editForm.location,
         description: editForm.description,
+        contact_info: editForm.contact_info,
         item: { ...r.item, name: editForm.item_name, category: editForm.item_category }
       } : r));
       setSelectedReport(prev => prev ? {
         ...prev,
         location: editForm.location,
         description: editForm.description,
+        contact_info: editForm.contact_info,
         item: { ...prev.item, name: editForm.item_name, category: editForm.item_category }
       } : null);
       setIsEditing(false);
@@ -257,6 +262,13 @@ const MyReports = () => {
                             onChange={(e) => setEditForm({...editForm, location: e.target.value})}
                             required
                           />
+                          <Input 
+                            label="Kontak (No HP / WA)"
+                            name="contact_info"
+                            value={editForm.contact_info}
+                            onChange={(e) => setEditForm({...editForm, contact_info: e.target.value})}
+                            required
+                          />
                           <Textarea 
                             label="Deskripsi Detail"
                             name="description"
@@ -304,6 +316,10 @@ const MyReports = () => {
                               <p className="text-sm text-gray-500">ID Laporan</p>
                               <p className="font-medium text-gray-900">#REP-{selectedReport.id.toString().padStart(3, '0')}</p>
                             </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Kontak</p>
+                              <p className="font-medium text-gray-900">{selectedReport.contact_info || '-'}</p>
+                            </div>
                           </div>
 
                           <div>
@@ -332,7 +348,8 @@ const MyReports = () => {
                                     item_name: selectedReport.item.name,
                                     item_category: selectedReport.item.category || 'Lainnya',
                                     location: selectedReport.location,
-                                    description: selectedReport.description
+                                    description: selectedReport.description,
+                                    contact_info: selectedReport.contact_info || ''
                                   });
                                   setIsEditing(true);
                                 }}

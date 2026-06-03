@@ -208,7 +208,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_handover.toString().padStart(4, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_handover}</p>
                   <p className="text-sm text-gray-400 mt-2">Kumulatif Semester Ini</p>
                 </div>
               </div>
@@ -225,7 +225,7 @@ class HandoverHistory extends Component<Record<string, never>, HandoverHistorySt
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.today_handover.toString().padStart(2, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.today_handover}</p>
                   <p className="text-sm text-gray-400 mt-2">+{stats.today_handover} dari Kemarin</p>
                 </div>
               </div>

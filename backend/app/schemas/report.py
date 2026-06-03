@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 from datetime import datetime
-from app.models import ReportTypeEnum, ReportStatusEnum
+from app.models import ReportStatusEnum
 from app.schemas.item import ItemCreate, ItemResponse
 from app.schemas.user import UserResponse
 
 
 class ReportBase(BaseModel):
-    type: ReportTypeEnum
+    contact_info: str | None = None
     location: str
     description: str
     report_time: datetime | None = None
@@ -46,5 +46,6 @@ class ReportEditByPencari(BaseModel):
     location: str | None = None
     description: str | None = None
     report_time: datetime | None = None
+    contact_info: str | None = None
     item_name: str | None = None
     item_category: str | None = None

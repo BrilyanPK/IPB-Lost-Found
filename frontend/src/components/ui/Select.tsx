@@ -17,6 +17,7 @@ interface SelectProps {
   required?: boolean;
   label?: string;
   error?: string;
+  searchable?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({ 
@@ -29,15 +30,18 @@ export const Select: React.FC<SelectProps> = ({
   placeholder = 'Pilih opsi...',
   required = false,
   label,
-  error
+  error,
+  searchable = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchQuery('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -53,9 +57,13 @@ export const Select: React.FC<SelectProps> = ({
       target: { name, value: optionValue }
     } as unknown as React.ChangeEvent<HTMLSelectElement>);
     setIsOpen(false);
+    setSearchQuery('');
   };
 
   const selectedOption = options.find(opt => opt.value === value);
+  const filteredOptions = searchable 
+    ? options.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase()))
+    : options;
 
   return (
     <div className={`flex flex-col gap-1.5 mb-6 ${className}`}>
@@ -116,8 +124,24 @@ export const Select: React.FC<SelectProps> = ({
       {/* Custom Dropdown Menu */}
       {isOpen && !disabled && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 p-1.5 z-50 animate-in fade-in zoom-in-95 origin-top max-h-60 overflow-y-auto custom-scrollbar" style={{ fontFamily: "'Roboto', sans-serif" }}>
-          {options.map((opt, index) => (
-            <React.Fragment key={opt.value}>
+          {searchable && (
+            <div className="p-2 sticky top-0 bg-white z-10 border-b border-gray-100 mb-1">
+              <input
+                type="text"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="Cari..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                autoFocus
+              />
+            </div>
+          )}
+          {filteredOptions.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-gray-500 text-center">Tidak ditemukan</div>
+          ) : (
+            filteredOptions.map((opt, index) => (
+              <React.Fragment key={opt.value}>
               <div 
                 onClick={() => handleSelect(opt.value)}
                 className={`px-4 py-2.5 text-sm font-normal rounded-lg cursor-pointer transition-colors flex items-center justify-between
@@ -127,11 +151,12 @@ export const Select: React.FC<SelectProps> = ({
                 {opt.label}
               </div>
               {/* Optional divider between items, except last one */}
-              {index < options.length - 1 && (
+              {index < filteredOptions.length - 1 && (
                 <div className="h-px bg-gray-50 my-0.5 mx-2"></div>
               )}
             </React.Fragment>
-          ))}
+          ))
+          )}
         </div>
       )}
       </div>

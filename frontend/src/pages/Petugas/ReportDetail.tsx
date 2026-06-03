@@ -23,7 +23,7 @@ import {
 
 interface ReportItem {
   id: string;
-  type: string;
+  contact_info?: string;
   report_time: string;
   location: string;
   description: string;
@@ -120,7 +120,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
             location: report.location,
             description: report.description,
             status: report.status,
-            receiver_id: report.receiver_id || (report.type === 'Kehilangan' ? report.user.id : '')
+            receiver_id: report.receiver_id || ''
           },
           previewUrl: report.item.photo_url || null
         });
@@ -187,8 +187,17 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
 
   handleDelete = async () => {
     if (!window.confirm('Apakah Anda yakin ingin membatalkan laporan ini?')) return;
-    toast.success('Laporan berhasil dibatalkan.');
-    this.props.navigate('/petugas/reports');
+    try {
+      await api.delete(`/petugas/laporan/${this.state.report?.id}`);
+      toast.success('Laporan berhasil dibatalkan.');
+      this.props.navigate('/petugas/reports');
+    } catch (err: unknown) {
+      let errorMessage = 'Gagal membatalkan laporan';
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.detail || err.message;
+      }
+      toast.error('Error: ' + errorMessage);
+    }
   };
 
   render() {
@@ -232,6 +241,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                       value={editData.finder_id}
                       onChange={e => this.setState({ editData: { ...editData, finder_id: e.target.value } })}
                       options={this.state.users}
+                      searchable
                     />
 
                     <Input 
@@ -313,6 +323,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                         onChange={e => this.setState({ editData: { ...editData, receiver_id: e.target.value } })}
                         required={editData.status === 'Dikembalikan'}
                         options={this.state.users}
+                        searchable
                       />
                     </div>
 
@@ -418,11 +429,6 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </div>
                   <div className="flex gap-3">
                     <span className={`px-5 py-2 rounded-full text-[10px] font-black tracking-wide ${
-                      report.type === 'Kehilangan' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                    }`}>
-                      {report.type}
-                    </span>
-                    <span className={`px-5 py-2 rounded-full text-[10px] font-black tracking-wide ${
                       report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
                       report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
                       report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-600'
@@ -469,7 +475,12 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                       <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
                         <FiUser size={14} />
                       </div>
-                      <span className="text-sm font-bold text-gray-900">{report.user.full_name}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-900">{report.user.full_name}</span>
+                        {report.contact_info && (
+                          <span className="text-[10px] font-medium text-gray-500">{report.contact_info}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -481,7 +492,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                   </p>
                 </div>
 
-                {report.receiver && (
+                {report.receiver && report.status === 'Dikembalikan' && (
                   <div className="mt-12 p-8 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center gap-6">
                     <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
                       <FiUser size={24} />

@@ -17,11 +17,6 @@ class RoleEnum(str, enum.Enum):
     ADMIN = "Admin"
 
 
-class ReportTypeEnum(str, enum.Enum):
-    KEHILANGAN = "Kehilangan"
-    PENEMUAN = "Penemuan"
-
-
 class ReportStatusEnum(str, enum.Enum):
     HILANG = "Hilang"
     DITEMUKAN = "Ditemukan"
@@ -59,7 +54,7 @@ class Report(Base):
     __tablename__ = "reports"
 
     id = Column(String(21), primary_key=True, default=lambda: generate_prefixed_id("REP"))
-    type = Column(Enum(ReportTypeEnum))
+    contact_info = Column(String, nullable=True)
     user_id = Column(String(21), ForeignKey("users.id"))
     item_id = Column(String(21), ForeignKey("items.id"))
     report_time = Column(DateTime, default=datetime.utcnow)

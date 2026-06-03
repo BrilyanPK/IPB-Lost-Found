@@ -60,6 +60,18 @@ def update_status(
     return ReportService.update_status(session, report_id, status_update, current_user)
 
 
+@router.delete(
+    "/laporan/{report_id}",
+    dependencies=[Depends(require_role([RoleEnum.PETUGAS]))]
+)
+def delete_laporan(
+    report_id: str,
+    session: SessionDep,
+    current_user: CurrentUser
+):
+    return ReportService.delete(session, report_id, current_user)
+
+
 @router.get(
     "/riwayat",
     response_model=List[ReportResponse],

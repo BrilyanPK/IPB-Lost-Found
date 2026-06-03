@@ -19,6 +19,7 @@ interface InputState {
     occurrence_time: string;
     location: string;
     description: string;
+    contact: string;
     photo_url: string;
   };
   selectedFile: File | null;
@@ -39,6 +40,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
         occurrence_time: new Date().toISOString().slice(0, 16),
         location: '',
         description: '',
+        contact: '',
         photo_url: ''
       },
       selectedFile: null,
@@ -95,6 +97,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
     if (!formData.location.trim()) errors.location = "Lokasi temuan wajib diisi";
     if (!formData.description.trim()) errors.description = "Deskripsi wajib diisi";
     if (!formData.occurrence_time) errors.occurrence_time = "Waktu kejadian wajib diisi";
+    if (!formData.contact.trim()) errors.contact = "Kontak wajib diisi";
     
     this.setState({ formErrors: errors });
     return Object.keys(errors).length === 0;
@@ -121,7 +124,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
       }
 
       const reportRes = await api.post('/petugas/laporan', {
-        type: 'Penemuan',
+        contact_info: formData.contact,
         location: formData.location,
         description: formData.description,
         report_time: new Date(formData.occurrence_time).toISOString(),
@@ -147,6 +150,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
           occurrence_time: new Date().toISOString().slice(0, 16),
           location: '',
           description: '',
+          contact: '',
           photo_url: ''
         },
         selectedFile: null,
@@ -249,16 +253,29 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                     />
                   </div>
 
-                  <Input
-                    label="Lokasi Kejadian"
-                    name="location"
-                    placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
-                    value={formData.location}
-                    onChange={this.handleChange}
-                    required
-                    error={this.state.formErrors.location}
-                    className="w-full"
-                  />
+                  <div className="grid grid-cols-2 gap-6">
+                    <Input
+                      label="Lokasi Kejadian"
+                      name="location"
+                      placeholder="Misal: Perpustakaan LSI, Meja Belajar Utara"
+                      value={formData.location}
+                      onChange={this.handleChange}
+                      required
+                      error={this.state.formErrors.location}
+                      className="w-full"
+                    />
+
+                    <Input
+                      label="Kontak (No HP / WA)"
+                      name="contact"
+                      placeholder="Misal: 08123456789"
+                      value={formData.contact}
+                      onChange={this.handleChange}
+                      required
+                      error={this.state.formErrors.contact}
+                      className="w-full"
+                    />
+                  </div>
 
                   <Textarea
                     label="Deskripsi Detail"

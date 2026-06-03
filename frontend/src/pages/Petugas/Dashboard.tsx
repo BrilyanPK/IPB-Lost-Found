@@ -11,7 +11,6 @@ import { FiBox, FiActivity } from 'react-icons/fi';
 
 interface ReportItem {
   id: string;
-  type: string;
   report_time: string;
   location: string;
   status: string;
@@ -101,10 +100,10 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
           <div className="flex justify-center">
             <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide ${
               report.status === 'Dikembalikan' ? 'bg-emerald-50 text-emerald-600' : 
-              report.type === 'Penemuan' ? 'bg-blue-50 text-blue-600' :
-              'bg-red-50 text-red-600'
+              report.status === 'Ditemukan' ? 'bg-blue-50 text-blue-600' :
+              report.status === 'Diproses' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
             }`}>
-              {report.status === 'Dikembalikan' ? 'Dikembalikan' : report.type}
+              {report.status}
             </span>
           </div>
         )
@@ -132,7 +131,7 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_inventory.toString().padStart(3, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.total_inventory}</p>
                   <p className="text-sm text-gray-400 mt-2">Barang di Pos</p>
                 </div>
               </div>
@@ -149,7 +148,7 @@ class Dashboard extends Component<WithRouterProps, DashboardState> {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.reports_today.toString().padStart(2, '0')}</p>
+                  <p className="text-6xl font-bold text-gray-900" style={{ fontFamily: "'Montserrat', sans-serif" }}>{stats.reports_today}</p>
                   <p className="text-sm text-gray-400 mt-2">Laporan Baru Hari Ini</p>
                 </div>
               </div>

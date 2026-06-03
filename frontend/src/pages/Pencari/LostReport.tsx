@@ -20,7 +20,8 @@ const LostReport = () => {
     name: '',
     category: '',
     location: '',
-    description: ''
+    description: '',
+    contact: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +51,7 @@ const LostReport = () => {
     if (!formData.category) errors.category = "Kategori wajib dipilih";
     if (!formData.location.trim()) errors.location = "Lokasi wajib diisi";
     if (!formData.description.trim()) errors.description = "Deskripsi wajib diisi";
+    if (!formData.contact.trim()) errors.contact = "Kontak wajib diisi";
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -76,7 +78,7 @@ const LostReport = () => {
       }
 
       await api.post('/pencari/laporan', {
-        type: 'Kehilangan',
+        contact_info: formData.contact,
         location: formData.location,
         description: formData.description,
         item: {
@@ -156,7 +158,10 @@ const LostReport = () => {
                   ]}
                 />
               </div>
-              <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required error={formErrors.location} />
+              <div className="grid md:grid-cols-2 gap-6">
+                <Input label="Lokasi Terakhir Terlihat" name="location" value={formData.location} onChange={handleChange} placeholder="Misal: Gedung Kuliah Umum (GKU)" required error={formErrors.location} />
+                <Input label="Kontak (No HP / WA)" name="contact" value={formData.contact} onChange={handleChange} placeholder="Misal: 08123456789" required error={formErrors.contact} />
+              </div>
               
               <Textarea 
                 label="Deskripsi Detail"

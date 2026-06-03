@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
-from app.models import Inventory, Report, ReportTypeEnum, User, RoleEnum, ActivityLog
+from app.models import Inventory, Report, ReportStatusEnum, User, RoleEnum, ActivityLog
 
 
 class DashboardService:
@@ -14,8 +14,8 @@ class DashboardService:
             Report.created_at >= datetime.combine(today, datetime.min.time())
         ).count()
 
-        total_lost = db.query(Report).filter(Report.type == ReportTypeEnum.KEHILANGAN).count()
-        total_found = db.query(Report).filter(Report.type == ReportTypeEnum.PENEMUAN).count()
+        total_lost = db.query(Report).filter(Report.status.in_([ReportStatusEnum.HILANG, ReportStatusEnum.DIPROSES])).count()
+        total_found = db.query(Report).filter(Report.status.in_([ReportStatusEnum.DITEMUKAN, ReportStatusEnum.DIKEMBALIKAN])).count()
 
         return {
             "total_inventory": total_inventory,
