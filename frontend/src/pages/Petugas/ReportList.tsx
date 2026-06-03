@@ -10,6 +10,8 @@ import { FiFileText, FiCheckCircle, FiSearch, FiSliders } from 'react-icons/fi';
 
 interface ReportItem {
   id: string;
+  report_time: string;
+  location: string;
   status: string;
   item: {
     name: string;
