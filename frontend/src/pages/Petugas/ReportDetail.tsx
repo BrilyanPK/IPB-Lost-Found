@@ -42,7 +42,7 @@ interface ReportItem {
     category: string;
     photo_url?: string;
   };
-  user: {
+  user?: {
     id: string;
     full_name: string;
   };
@@ -476,7 +476,7 @@ class ReportDetailComponent extends Component<WithRouterProps, ReportDetailState
                         <FiUser size={14} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900">{report.user.full_name}</span>
+                        <span className="text-sm font-bold text-gray-900">{report.user?.full_name || 'Pengguna Dihapus'}</span>
                         {report.contact_info && (
                           <span className="text-[10px] font-medium text-gray-500">{report.contact_info}</span>
                         )}

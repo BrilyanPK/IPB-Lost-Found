@@ -19,7 +19,7 @@ class ReportCreate(ReportBase):
 
 class ReportResponse(ReportBase):
     id: str
-    user_id: str
+    user_id: str | None = None
     item_id: str
     report_time: datetime
     status: ReportStatusEnum
@@ -27,7 +27,7 @@ class ReportResponse(ReportBase):
     finder_id: str | None = None
     receiver_id: str | None = None
     item: ItemResponse
-    user: UserResponse
+    user: UserResponse | None = None
     finder: UserResponse | None = None
     receiver: UserResponse | None = None
 

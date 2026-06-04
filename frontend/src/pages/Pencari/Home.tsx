@@ -14,7 +14,6 @@ import HeroBg from '../../assets/Hero Bg.png';
 
 interface LostItem {
   id: string;
-  type: string;
   status: string;
   location: string;
   description: string;
@@ -50,7 +49,7 @@ const Home = () => {
     const fetchReports = async () => {
       try {
         const res = await api.get('/pencari/laporan');
-        setItems(res.data.filter((r: LostItem) => r.type === 'Kehilangan' && r.status !== 'Dikembalikan'));
+        setItems(res.data.filter((r: LostItem) => r.status === 'Hilang' || r.status === 'Diproses'));
       } catch (err: unknown) {
         console.error("Gagal mengambil data", err);
       } finally {
