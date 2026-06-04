@@ -76,15 +76,23 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
 
   handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { formData, formErrors } = this.state;
-    this.setState({
-      formData: { ...formData, [e.target.name]: e.target.value }
-    });
-    
-    if (formErrors[e.target.name]) {
-      this.setState({
-        formErrors: { ...formErrors, [e.target.name]: '' }
-      });
+    const newValue = e.target.value;
+    const updatedErrors = { ...formErrors };
+
+    if (e.target.name === 'contact') {
+      if (/[a-zA-Z]/.test(newValue)) {
+        updatedErrors.contact = 'Kontak hanya boleh berisi angka, huruf tidak diperbolehkan';
+      } else {
+        updatedErrors.contact = '';
+      }
+    } else if (updatedErrors[e.target.name]) {
+      updatedErrors[e.target.name] = '';
     }
+
+    this.setState({
+      formData: { ...formData, [e.target.name]: newValue },
+      formErrors: updatedErrors
+    });
   };
 
   validateForm = () => {
@@ -97,7 +105,14 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
     if (!formData.location.trim()) errors.location = "Lokasi temuan wajib diisi";
     if (!formData.description.trim()) errors.description = "Deskripsi wajib diisi";
     if (!formData.occurrence_time) errors.occurrence_time = "Waktu kejadian wajib diisi";
-    if (!formData.contact.trim()) errors.contact = "Kontak wajib diisi";
+    if (!formData.contact.trim()) {
+      errors.contact = "Kontak wajib diisi";
+    } else {
+      const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{7,11}$/;
+      if (!phoneRegex.test(formData.contact.trim())) {
+        errors.contact = "Format nomor HP tidak valid (contoh: 08123456789 atau +628123456789)";
+      }
+    }
     
     this.setState({ formErrors: errors });
     return Object.keys(errors).length === 0;
@@ -201,6 +216,7 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                     error={this.state.formErrors.finder_id}
                     options={this.state.users}
                     className="w-full"
+                    searchable
                   />
 
                   <Input
@@ -274,6 +290,8 @@ class InputFoundItem extends Component<Record<string, never>, InputState> {
                       required
                       error={this.state.formErrors.contact}
                       className="w-full"
+                      type="tel"
+                      maxLength={15}
                     />
                   </div>
 
