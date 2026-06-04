@@ -1,9 +1,19 @@
 from datetime import datetime
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models import Report, Item, User, ReportStatusEnum, RoleEnum
 from app.schemas.report import ReportCreate, ReportUpdate, ReportEditByPencari
 from app.services.activity_log_service import ActivityLogService
+
+
+def _report_query_options():
+    """Common eager loading options for Report queries."""
+    return [
+        joinedload(Report.item),
+        joinedload(Report.user),
+        joinedload(Report.finder),
+        joinedload(Report.receiver),
+    ]
 
 
 class ReportService:
@@ -38,15 +48,32 @@ class ReportService:
 
     @staticmethod
     def get_all(db: Session, skip: int = 0, limit: int = 100) -> list:
-        return db.query(Report).order_by(Report.created_at.desc()).offset(skip).limit(limit).all()
+        return (
+            db.query(Report)
+            .options(*_report_query_options())
+            .order_by(Report.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     @staticmethod
     def get_by_user(db: Session, user_id: str) -> list:
-        return db.query(Report).filter(Report.user_id == user_id).all()
+        return (
+            db.query(Report)
+            .options(*_report_query_options())
+            .filter(Report.user_id == user_id)
+            .all()
+        )
 
     @staticmethod
     def update_status(db: Session, report_id: str, report_update: ReportUpdate, user: User) -> Report:
-        db_report = db.query(Report).filter(Report.id == report_id).first()
+        db_report = (
+            db.query(Report)
+            .options(*_report_query_options())
+            .filter(Report.id == report_id)
+            .first()
+        )
         if not db_report:
             raise HTTPException(status_code=404, detail="Report not found")
 
@@ -69,7 +96,12 @@ class ReportService:
 
     @staticmethod
     def update_my_report(db: Session, report_id: str, edit_data: ReportEditByPencari, user: User) -> Report:
-        db_report = db.query(Report).filter(Report.id == report_id).first()
+        db_report = (
+            db.query(Report)
+            .options(*_report_query_options())
+            .filter(Report.id == report_id)
+            .first()
+        )
         if not db_report:
             raise HTTPException(status_code=404, detail="Report not found")
             
@@ -102,7 +134,12 @@ class ReportService:
 
     @staticmethod
     def delete(db: Session, report_id: str, user: User) -> dict:
-        db_report = db.query(Report).filter(Report.id == report_id).first()
+        db_report = (
+            db.query(Report)
+            .options(*_report_query_options())
+            .filter(Report.id == report_id)
+            .first()
+        )
         if not db_report:
             raise HTTPException(status_code=404, detail="Report not found")
             
